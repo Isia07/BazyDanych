@@ -38,6 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'EventTickets',
+    'EventTickets.relational',
+    'EventTickets.objective_relational',
+    'EventTickets.objective',
+    'EventTickets.nosql',
 ]
 
 MIDDLEWARE = [
@@ -74,14 +78,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    'relational': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'tickets',
         'USER': 'inez',
         'PASSWORD': 'inez',
         'HOST': 'localhost',
         'PORT': '5432',
-    }
+    },
 }
 
 
