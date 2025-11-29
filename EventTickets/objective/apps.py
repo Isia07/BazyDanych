@@ -3,5 +3,5 @@ from django.apps import AppConfig
 
 class EventticketsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'EvenTickets.objective'
+    name = 'EventTickets.objective'
     label = 'objective'
