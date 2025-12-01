@@ -79,16 +79,18 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {},
-    'objective_relational': {
+obj_rel_database = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'db_obj_rel',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'db',
+        'HOST': 'db_obj_rel',
         'PORT': '5432',
-    },
+    }
+
+DATABASES = {
+    'default': {},
+    'objective_relational': obj_rel_database,
 }
 
 # Password validation
