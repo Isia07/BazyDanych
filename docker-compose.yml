@@ -1,0 +1,79 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_OBJ_REL_URL=postgres://postgres:postgres@db_obj_rel:5432/db_obj_rel
+      # - DB_OBJECT_URL=postgres://obj_user:obj_haslo@db_object:5432/db_object
+      # - DB_RELATIONAL_URL=postgres://rel_user:rel_haslo@db_relational:5432/db_relational
+      # - DB_NOSQL_URL=mongodb://nosql_user:nosql_haslo@db_nosql:27017/db_nosql
+
+      - DJANGO_SECRET_KEY=super-long-random-secret-key-1234567890
+      - DEBUG=True
+    depends_on:
+      db_obj_rel:
+        condition: service_healthy
+      # db_object:
+      #   condition: service_healthy
+      # db_relational:
+      #   condition: service_healthy
+      # db_nosql:
+      #   condition: service_started
+    command: python manage.py runserver 0.0.0.0:8000
+
+  # ──────────────────────── object-relational ────────────────────────
+  db_obj_rel:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db_obj_rel
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_obj_rel:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+
+  # ──────────────────────── objective  ────────────────────────
+  # db_object:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     - POSTGRES_USER=obj_user
+  #     - POSTGRES_PASSWORD=obj_haslo123
+  #     - POSTGRES_DB=db_object
+  #   ports:
+  #     - "5434:5432"
+  #   volumes:
+  #     - pgdata_object:/var/lib/postgresql/data
+
+  # ──────────────────────── relational  ────────────────────────
+  # db_relational:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     - POSTGRES_USER=rel_user
+  #     - POSTGRES_PASSWORD=rel_haslo456
+  #     - POSTGRES_DB=db_relational
+  #   ports:
+  #     - "5435:5432"
+  #   volumes:
+  #     - pgdata_relational:/var/lib/postgresql/data
+
+  # ──────────────────────── NoSQL ────────────────────────
+  # db_nosql:
+  #   image: mongo:7-jammy
+  #   environment:
+  #     - MONGO_INITDB_ROOT_USERNAME=nosql_user
+  #     - MONGO_INITDB_ROOT_PASSWORD=nosql_tajne789
+  #     - MONGO_INITDB_DATABASE=db_nosql
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodata:/data/db
+
+volumes:
+  pgdata_obj_rel:
+  # pgdata_object:
+  # pgdata_relational:
+  # mongodata:
