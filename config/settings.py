@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DB_OBJ_REL_URL')), # TODO: Set default as '{}' before merge
+    'default': {},
     'objective_relational': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'db_obj_rel',
