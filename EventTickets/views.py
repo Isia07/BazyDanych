@@ -24,6 +24,14 @@ def select_database(request):
                     #     'host': 'mongodb://localhost:27017',
                     # },
                 # },
+            'objective_relational': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'db_obj_rel',
+                'USER': 'postgres',
+                'PASSWORD': 'postgres',
+                'HOST': 'db',
+                'PORT': '5432',
+            },
         }
 
         settings.DATABASES['default'] = db_configs.get(selected, {})
