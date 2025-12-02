@@ -78,7 +78,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {},
+    'default': {
+        'ENGINE': 'django_mongodb_backend',
+        'NAME': 'ticket_system_nosql',
+        'HOST': 'localhost',
+        'PORT': 27017
+    },
 }
 
 
