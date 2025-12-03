@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'EventTickets.objective_relational',
     'EventTickets.objective',
     'EventTickets.nosql',
+    'EventTickets.shared',
 ]
 
 MIDDLEWARE = [
@@ -88,9 +89,39 @@ obj_rel_database = {
         'PORT': '5432',
     }
 
+relational_database = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db_relational',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db_relational',
+        'PORT': '5432',
+    }
+
+# nosql_database = {
+#     'ENGINE': 'django_mongodb_backend',
+#     'NAME': 'db_nosql',
+#     'USER': '',
+#     'PASSWORD': '',
+#     'HOST': 'db_nosql',
+#     'PORT': '27017',
+# }
+
+# objective_database = {
+#     'ENGINE': '',
+#     'NAME': '',
+#     'USER': '',
+#     'PASSWORD': '',
+#     'HOST': 'db_objective',
+#     'PORT': '',
+# }
+
 DATABASES = {
-    'default': {},
+    'default': {}, # To create superuser set your database here
     'objective_relational': obj_rel_database,
+    'relational': relational_database,
+    # 'nosql': nosql_database,
+    # 'objective': objective_database
 }
 
 # Password validation
@@ -133,3 +164,4 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'shared.User'
