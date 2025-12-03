@@ -7,6 +7,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
+COPY entrypoint.py /app/entrypoint.py
+RUN chmod +x /app/entrypoint.py
 
+EXPOSE 8000
+ENTRYPOINT ["/app/entrypoint.py"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
