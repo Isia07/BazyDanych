@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from EventTickets.objective_relational.views import RegisterView as ObjRelRegister, LoginView as ObjRelLogin
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('EventTickets.urls')),
+    path('api/v1/obj-rel/auth/register', ObjRelRegister.as_view(), name='obj_rel_register'),
+    path('api/v1/obj-rel/auth/login', ObjRelLogin.as_view(), name='obj_rel_login'),
 ]

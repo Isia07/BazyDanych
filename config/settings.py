@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,9 +46,12 @@ INSTALLED_APPS = [
     'EventTickets.objective',
     'EventTickets.nosql',
     'EventTickets.shared',
+    'rest_framework',
+    'rest_framework.authtoken'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -117,7 +121,7 @@ relational_database = {
 # }
 
 DATABASES = {
-    'default': {}, # To create superuser set your database here
+    'default': obj_rel_database, # To create superuser set your database here
     'objective_relational': obj_rel_database,
     'relational': relational_database,
     # 'nosql': nosql_database,
@@ -165,3 +169,20 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'shared.User'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ],
+}
+
+AUTHENTICATION_BACKENDS = [
+    'EventTickets.shared.authentication.EmailBackend',
+]

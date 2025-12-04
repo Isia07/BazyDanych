@@ -1,6 +1,9 @@
 asgiref==3.11.0
 dj-database-url==3.0.1
 Django==5.2.8
+django-cors-headers==4.9.0
+django-filter==25.2
+djangorestframework==3.16.1
 postgres==4.0
 psycopg==3.3.0
 psycopg2-binary==2.9.11
