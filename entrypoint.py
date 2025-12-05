@@ -35,5 +35,9 @@ if __name__ == "__main__":
     os.system("python manage.py migrate objective_relational --database=objective_relational")
     os.system("python manage.py migrate relational --database=relational")
 
+    print("Migrating authtoken tables to all databases...")
+    os.system("python manage.py migrate authtoken --database=objective_relational")
+    os.system("python manage.py migrate authtoken --database=relational")
+
     print("All migrations completed! Starting server...")
     os.execvp("python", ["python", "manage.py", "runserver", "0.0.0.0:8000"])
