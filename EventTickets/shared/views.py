@@ -98,6 +98,7 @@ class BaseLoginView(APIView):
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
+    database = 'default'
 
     def post(self, request):
         user = request.user
