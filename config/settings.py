@@ -181,6 +181,9 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        "EventTickets.shared.auth.CookieTokenAuthentication",
+    ]
 }
 
 AUTHENTICATION_BACKENDS = [

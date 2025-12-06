@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
+
 from EventTickets.shared.models import User
 from EventTickets.shared.serializers import RegisterSerializer, LoginSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 class BaseRegisterView(APIView):
@@ -58,9 +60,10 @@ class BaseLoginView(APIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             if user.check_password(password):
+                Token.objects.filter(user=user).delete()
                 token, _ = Token.objects.using(self.database).get_or_create(user=user)
-                return Response({
-                    "token": token.key,
+                response = Response({
+                    "success": True,
                     "user": {
                         "id": user.id,
                         "email": user.email,
@@ -69,6 +72,15 @@ class BaseLoginView(APIView):
                         "role": user.role
                     }
                 }, status=200)
+
+                response.set_cookie(
+                    key="auth_token",
+                    value=token.key,
+                    httponly=True,
+                    secure=False,
+                    samesite="Lax",
+                    max_age=86400
+                )
             else:
                 return Response({
                     "success": False,
@@ -80,3 +92,16 @@ class BaseLoginView(APIView):
                 "success": False,
                 "error": "No account found with this email"
             }, status=status.HTTP_400_BAD_REQUEST)
+
+        return response
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        Token.objects.filter(user=user).delete()
+        response = Response({"success": True})
+        response.delete_cookie("auth_token")
+        return response

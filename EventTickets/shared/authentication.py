@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import BaseBackend
+from rest_framework.authentication import TokenAuthentication
+
 
 class EmailBackend(BaseBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
@@ -17,3 +19,13 @@ class EmailBackend(BaseBackend):
             return user_model.objects.get(pk=user_id)
         except user_model.DoesNotExist:
             return None
+
+
+class CookieTokenAuthentication(TokenAuthentication):
+    def authenticate(self, request):
+        token = request.COOKIES.get('auth_token')
+        if not token:
+            return None
+
+        return self.authenticate_credentials(token)
+
