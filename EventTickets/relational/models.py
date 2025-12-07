@@ -46,6 +46,10 @@ class Discount(models.Model):
     valid_from = models.DateTimeField()
     valid_to = models.DateTimeField()
 
+    class Meta:
+        db_table = "discount"
+        app_label = "relational"
+
     def __str__(self):
         return self.code
 
