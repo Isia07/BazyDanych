@@ -3,7 +3,7 @@ from .relational.views import RelRegisterView, RelLoginView, DiscountDetailView,
 from EventTickets.objective_relational.views import (
     RegisterView as ObjRelRegister, LoginView as ObjRelLogin,
     StatusObjListCreateView, EventTypeObjListCreateView, TicketTypeObjListCreateView, SeatTypeObjListCreateView,
-    DiscountObjListCreateView,
+    DiscountObjListCreateView, DiscountObjDetailView,
     EventListCreateView, EventDetailView,
     TicketListCreateView,
     UserOrderListView, OrderCreateView,
@@ -21,6 +21,7 @@ urlpatterns = [
 
     # Classifiers
     path('api/v1/obj-rel/discounts/', DiscountObjListCreateView.as_view(), name='obj_rel_discounts'),
+    path("api/v1/obj-rel/discounts/<int:id>/", DiscountObjDetailView.as_view(), name="obj_rel_discounts_id"),
     path('api/v1/obj-rel/event-types/', EventTypeObjListCreateView.as_view(), name='obj_rel_event_types'),
     path('api/v1/obj-rel/seat-types/', SeatTypeObjListCreateView.as_view(), name='obj_rel_seat_types'),
     path('api/v1/obj-rel/statuses/', StatusObjListCreateView.as_view(), name='obj_rel_statuses'),

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from EventTickets.shared.views import BaseRegisterView, BaseLoginView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, generics
 from .models import (
     Event, Ticket, Order, OrderTicket, Notification, Message,
     StatusObj, EventTypeObj, TicketTypeObj, SeatTypeObj, DiscountObj
@@ -90,21 +90,26 @@ class SeatTypeObjListCreateView(APIView):
             return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-class DiscountObjListCreateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        discounts = DiscountObj.objects.all()
-        serializer = DiscountObjSerializer(discounts, many=True)
-        return Response({"success": True, "data": serializer.data})
+class DiscountObjListCreateView(generics.ListCreateAPIView):
+    queryset = DiscountObj.objects.all()
+    serializer_class = DiscountObjSerializer
 
-    def post(self, request):
-        serializer = DiscountObjSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
+
+class DiscountObjDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = DiscountObj.objects.all()
+    serializer_class = DiscountObjSerializer
+    lookup_field = "id"
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
 # === Main resources ===
 class EventListCreateView(APIView):
