@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
+import dj_database_url
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,9 +45,13 @@ INSTALLED_APPS = [
     'EventTickets.objective_relational',
     'EventTickets.objective',
     'EventTickets.nosql',
+    'EventTickets.shared',
+    'rest_framework',
+    'rest_framework.authtoken'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -77,15 +84,48 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django_mongodb_backend',
-        'NAME': 'ticket_system_nosql',
-        'HOST': 'localhost',
-        'PORT': 27017
-    },
+
+obj_rel_database = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db_obj_rel',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db_obj_rel',
+        'PORT': '5432',
+    }
+
+relational_database = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db_relational',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db_relational',
+        'PORT': '5432',
+    }
+
+nosql_database = {
+    'ENGINE': 'django_mongodb_backend',
+    'NAME': 'ticket_system_nosql',
+    'HOST': 'localhost',
+    'PORT': 27017,
 }
 
+# objective_database = {
+#     'ENGINE': '',
+#     'NAME': '',
+#     'USER': '',
+#     'PASSWORD': '',
+#     'HOST': 'db_objective',
+#     'PORT': '',
+# }
+
+DATABASES = {
+    'default': obj_rel_database, # To create superuser set your database here
+    'objective_relational': obj_rel_database,
+    'relational': relational_database,
+    'nosql': nosql_database,
+    # 'objective': objective_database
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -127,3 +167,21 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'shared.User'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ],
+}
+
+AUTHENTICATION_BACKENDS = [
+    'EventTickets.shared.authentication.EmailBackend',
+]
