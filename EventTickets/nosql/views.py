@@ -1,13 +1,20 @@
-from django.shortcuts import render
 from django.http import JsonResponse
+
 from .mongo_client import (
     users_collection,
     events_collection,
     orders_collection,
     notifications_collection,
     messages_collection,
+    discounts_collection,           
 )
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from bson import ObjectId
+
+from .serializers import NosqlDiscountSerializer
 
 def nosql_events_list(request):
     if request.method != "GET":
@@ -47,3 +54,40 @@ def nosql_messages_list(request):
 
     messages = list(messages_collection.find({}, {"_id": 0}))
     return JsonResponse(messages, safe=False)
+
+class NosqlDiscountListCreateView(APIView):
+    def get(self, request):
+        discounts = list(discounts_collection.find())
+        serializer = NosqlDiscountSerializer(discounts, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = NosqlDiscountSerializer(data=request.data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            return Response(
+                NosqlDiscountSerializer(instance).data,
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class NosqlDiscountDetailView(APIView):
+    def get(self, request, pk):
+        try:
+            obj_id = ObjectId(pk)
+        except Exception:
+            return Response(
+                {"detail": "Nieprawidłowy identyfikator."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        discount = discounts_collection.find_one({"_id": obj_id})
+        if not discount:
+            return Response(
+                {"detail": "Podany kod nie istnieje."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = NosqlDiscountSerializer(discount)
+        return Response(serializer.data)

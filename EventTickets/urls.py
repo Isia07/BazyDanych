@@ -6,6 +6,8 @@ from EventTickets.nosql.views import (
     nosql_orders_list,
     nosql_notifications_list,
     nosql_messages_list,
+    NosqlDiscountListCreateView,
+    NosqlDiscountDetailView,
 )
 
 from .objective.views import (
@@ -115,6 +117,9 @@ path('api/nosql/events/', nosql_events_list, name='nosql-events-list'),
     path('api/nosql/orders/', nosql_orders_list, name='nosql-orders-list'),
     path('api/nosql/notifications/', nosql_notifications_list, name='nosql-notifications-list'),
     path('api/nosql/messages/', nosql_messages_list, name='nosql-messages-list'),
+    path('api/nosql/discounts/', NosqlDiscountListCreateView.as_view(), name='nosql-discounts-list-create'),
+    path('api/nosql/discounts/<str:pk>/', NosqlDiscountDetailView.as_view(), name='nosql-discounts-detail'),
+
     # register
     path(
         "api/v1/obj-rel/auth/register/",
