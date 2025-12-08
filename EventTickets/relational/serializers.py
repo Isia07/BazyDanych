@@ -10,6 +10,12 @@ class DiscountSerializer(serializers.ModelSerializer):
         }
 
     def validate_code(self, value):
+        instance = getattr(self, 'instance', None)
+
+        if instance:
+            if instance.code == value:
+                return value
+
         if Discount.objects.using('relational').filter(code=value).exists():
             raise serializers.ValidationError("Kod rabatowy o podanej wartości już istnieje.")
         return value

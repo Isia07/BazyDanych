@@ -1,7 +1,5 @@
 from EventTickets.shared.views import BaseRegisterView, BaseLoginView
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from .models import Discount
 from .serializers import DiscountSerializer
 
@@ -15,26 +13,25 @@ class RelLoginView(BaseLoginView):
     database = 'relational'
 
 
-class DiscountListCreateView(APIView):
-    def get(self, request):
-        discounts = Discount.objects.using("relational").all()
-        serializer = DiscountSerializer(discounts, many=True)
-        return Response(serializer.data)
+class RelDiscountListCreateView(generics.ListCreateAPIView):
+    serializer_class = DiscountSerializer
 
-    def post(self, request):
-        serializer = DiscountSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        return Discount.objects.using("relational").all()
+
+    def perform_create(self, serializer):
+        serializer.save()
 
 
-class DiscountDetailView(APIView):
-    def get(self, request, pk):
-        try:
-            discount = Discount.objects.using("relational").get(pk=pk)
-        except Discount.DoesNotExist:
-            return Response({"detail": "Podany kod nie istnieje."}, status=status.HTTP_404_NOT_FOUND)
+class RelDiscountDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = DiscountSerializer
 
-        serializer = DiscountSerializer(discount)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Discount.objects.using("relational").all()
+
+    def perform_update(self, serializer):
+        serializer.save(using="relational")
+
+    def perform_destroy(self, instance):
+        instance.delete(using="relational")
+
