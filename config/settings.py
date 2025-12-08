@@ -85,6 +85,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
+nosql_database = {
+        'ENGINE': 'django_mongodb_backend',
+        'NAME': 'ticket_system_nosql',
+        'HOST': 'localhost',
+        'PORT': 27017,
+    }
+
 obj_rel_database = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'db_obj_rel',
@@ -103,12 +110,7 @@ relational_database = {
         'PORT': '5432',
     }
 
-nosql_database = {
-    'ENGINE': 'django_mongodb_backend',
-    'NAME': 'ticket_system_nosql',
-    'HOST': 'localhost',
-    'PORT': 27017,
-}
+
 
 # objective_database = {
 #     'ENGINE': '',
@@ -120,9 +122,9 @@ nosql_database = {
 # }
 
 DATABASES = {
-    'default': obj_rel_database, # To create superuser set your database here
-    'objective_relational': obj_rel_database,
-    'relational': relational_database,
+    'default': nosql_database, # To create superuser set your database here
+    #'objective_relational': obj_rel_database,
+    #'relational': relational_database,
     'nosql': nosql_database,
     # 'objective': objective_database
 }

@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from django.conf import settings
 
 
-db_conf = settings.DATABASES['default']
+db_conf = settings.DATABASES['nosql']
 
 client = MongoClient(
     host=db_conf.get('HOST', 'localhost'),
@@ -16,3 +16,4 @@ events_collection = db['events']
 orders_collection = db['orders']
 notifications_collection = db['notifications']
 messages_collection = db['messages']
+discounts_collection = db['discounts']
