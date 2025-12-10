@@ -38,7 +38,6 @@ class DiscountObjSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'discount_percentage', 'code', 'valid_from', 'valid_to')
 
 
-# === Main models ===
 class EventSerializer(serializers.ModelSerializer):
     event_type = EventTypeObjSerializer(read_only=True)
     event_type_id = serializers.PrimaryKeyRelatedField(

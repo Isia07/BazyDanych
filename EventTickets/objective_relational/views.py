@@ -23,72 +23,88 @@ class LoginView(BaseLoginView):
     database = 'objective_relational'
 
 
-class StatusObjListCreateView(APIView):
-    """GET + POST dla StatusObj (np. "planned", "ongoing", "cancelled", "finished")"""
-    permission_classes = [permissions.IsAuthenticated]
+class StatusObjListCreateView(generics.ListCreateAPIView):
+    queryset = StatusObj.objects.all()
+    serializer_class = StatusObjSerializer
 
-    def get(self, request):
-        objs = StatusObj.objects.all()
-        serializer = StatusObjSerializer(objs, many=True)
-        return Response({"success": True, "data": serializer.data})
-
-    def post(self, request):
-        serializer = StatusObjSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
 
-class EventTypeObjListCreateView(APIView):
-    """GET + POST dla EventTypeObj (np. "concert", "theater", "conference")"""
-    permission_classes = [permissions.IsAuthenticated]
+class StatusObjDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = StatusObj.objects.all()
+    serializer_class = StatusObjSerializer
+    lookup_field = "id"
 
-    def get(self, request):
-        objs = EventTypeObj.objects.all()
-        serializer = EventTypeObjSerializer(objs, many=True)
-        return Response({"success": True, "data": serializer.data})
-
-    def post(self, request):
-        serializer = EventTypeObjSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
 
-class TicketTypeObjListCreateView(APIView):
-    """GET + POST dla TicketTypeObj (np. "normal", "student", "VIP")"""
-    permission_classes = [permissions.IsAuthenticated]
+class EventTypeObjListCreateView(generics.ListCreateAPIView):
+    queryset = EventTypeObj.objects.all()
+    serializer_class = EventTypeObjSerializer
 
-    def get(self, request):
-        objs = TicketTypeObj.objects.all()
-        serializer = TicketTypeObjSerializer(objs, many=True)
-        return Response({"success": True, "data": serializer.data})
-
-    def post(self, request):
-        serializer = TicketTypeObjSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
 
-class SeatTypeObjListCreateView(APIView):
-    """GET + POST dla SeatTypeObj (np. "standing", "seated", "VIP box")"""
-    permission_classes = [permissions.IsAuthenticated]
+class EventTypeObjDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = EventTypeObj.objects.all()
+    serializer_class = EventTypeObjSerializer
+    lookup_field = "id"
 
-    def get(self, request):
-        objs = SeatTypeObj.objects.all()
-        serializer = SeatTypeObjSerializer(objs, many=True)
-        return Response({"success": True, "data": serializer.data})
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
-    def post(self, request):
-        serializer = SeatTypeObjSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+class TicketTypeObjListCreateView(generics.ListCreateAPIView):
+    queryset = TicketTypeObj.objects.all()
+    serializer_class = TicketTypeObjSerializer
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+
+class TicketTypeObjDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = TicketTypeObj.objects.all()
+    serializer_class = TicketTypeObjSerializer
+    lookup_field = "id"
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+
+class SeatTypeObjListCreateView(generics.ListCreateAPIView):
+    queryset = SeatTypeObj.objects.all()
+    serializer_class = SeatTypeObjSerializer
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+
+class SeatTypeObjDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = SeatTypeObj.objects.all()
+    serializer_class = SeatTypeObjSerializer
+    lookup_field = "id"
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
 
 class DiscountObjListCreateView(generics.ListCreateAPIView):
@@ -111,7 +127,7 @@ class DiscountObjDetailView(generics.RetrieveUpdateDestroyAPIView):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
-# === Main resources ===
+
 class EventListCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -172,7 +188,6 @@ class EventDetailView(APIView):
         return Response({"success": True, "message": "Event deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
-# Ticket views
 class TicketListCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -189,7 +204,6 @@ class TicketListCreateView(APIView):
         return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Order views (user can only see own orders)
 class UserOrderListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -222,7 +236,6 @@ class OrderCreateView(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Notification & Message (user-specific)
 class UserNotificationListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -231,7 +244,7 @@ class UserNotificationListView(APIView):
         serializer = NotificationSerializer(notifications, many=True)
         return Response({"success": True, "data": serializer.data})
 
-    def patch(self, request, pk):  # mark as read
+    def patch(self, request, pk):
         try:
             notif = Notification.objects.get(pk=pk, user=request.user)
         except Notification.DoesNotExist:
