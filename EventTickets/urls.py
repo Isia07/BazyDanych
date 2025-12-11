@@ -9,6 +9,11 @@ from EventTickets.nosql.views import (
     nosql_messages_list,
     NosqlDiscountListCreateView,
     NosqlDiscountDetailView,
+    NosqlEventTypeListCreateView,
+    NosqlSeatTypeListCreateView,
+    NosqlTicketTypeListCreateView,
+    NosqlStatusListCreateView,
+    NosqlEventListCreateView,
 )
 
 urlpatterns = [
@@ -26,5 +31,10 @@ urlpatterns = [
     path('api/nosql/messages/', nosql_messages_list, name='nosql-messages-list'),
     path('api/nosql/discounts/', NosqlDiscountListCreateView.as_view(), name='nosql-discounts-list-create'),
     path('api/nosql/discounts/<str:pk>/', NosqlDiscountDetailView.as_view(), name='nosql-discounts-detail'),
+    path('api/nosql/event-types/', NosqlEventTypeListCreateView.as_view(), name='nosql-event-types'),
+    path('api/nosql/seat-types/', NosqlSeatTypeListCreateView.as_view(), name='nosql-seat-types'),
+    path('api/nosql/ticket-types/', NosqlTicketTypeListCreateView.as_view(), name='nosql-ticket-types'),
+    path('api/nosql/statuses/', NosqlStatusListCreateView.as_view(), name='nosql-statuses'),
+    path('api/nosql/events/manage/', NosqlEventListCreateView.as_view(), name='nosql-events-manage'),
 
 ]
