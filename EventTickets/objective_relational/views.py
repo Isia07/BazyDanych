@@ -128,143 +128,125 @@ class DiscountObjDetailView(generics.RetrieveUpdateDestroyAPIView):
         return [permissions.IsAuthenticated()]
 
 
-class EventListCreateView(APIView):
+class EventListCreateView(generics.ListCreateAPIView):
+    queryset = Event.objects.select_related('event_type', 'status').all()
+    serializer_class = EventSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        events = Event.objects.select_related('event_type', 'status').all()
-        serializer = EventSerializer(events, many=True)
-        return Response({"success": True, "data": serializer.data})
 
-    def post(self, request):
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Event.objects.select_related('event_type', 'status').all()
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
 
 
-class EventDetailView(APIView):
+class TicketListCreateView(generics.ListCreateAPIView):
+    queryset = Ticket.objects.select_related('event', 'discount').all()
+    serializer_class = TicketSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self, pk):
-        try:
-            return Event.objects.select_related('event_type', 'status').get(pk=pk)
-        except Event.DoesNotExist:
-            return None
 
-    def get(self, request, pk):
-        event = self.get_object(pk)
-        if not event:
-            return Response({"success": False, "error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = EventSerializer(event)
-        return Response({"success": True, "data": serializer.data})
-
-    def put(self, request, pk):
-        event = self.get_object(pk)
-        if not event:
-            return Response({"success": False, "error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = EventSerializer(event, data=request.data, partial=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, request, pk):
-        event = self.get_object(pk)
-        if not event:
-            return Response({"success": False, "error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = EventSerializer(event, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        event = self.get_object(pk)
-        if not event:
-            return Response({"success": False, "error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
-        event.delete()
-        return Response({"success": True, "message": "Event deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Ticket.objects.select_related('event', 'discount').all()
+    serializer_class = TicketSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
 
 
-class TicketListCreateView(APIView):
+class OrderListCreateView(generics.ListCreateAPIView):
+    serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        tickets = Ticket.objects.select_related('event', 'discount').all()
-        serializer = TicketSerializer(tickets, many=True)
-        return Response({"success": True, "data": serializer.data})
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).prefetch_related(
+            'orderticket_set__ticket',
+            'orderticket_set__ticket_types',
+            'orderticket_set__seat_type'
+        )
 
-    def post(self, request):
-        serializer = TicketSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
-class UserOrderListView(APIView):
+class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).prefetch_related(
+            'orderticket_set__ticket',
+            'orderticket_set__ticket_types',
+            'orderticket_set__seat_type'
+        )
+
+
+class OrderTicketListCreateView(generics.ListCreateAPIView):
+    queryset = OrderTicket.objects.select_related(
+        'ticket__event', 'ticket_types', 'seat_type', 'order'
+    ).all()
+    serializer_class = OrderTicketSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        orders = Order.objects.filter(user=request.user).prefetch_related('orderticket_set__ticket_types',
-                                                                          'orderticket_set__seat_type')
-        serializer = OrderSerializer(orders, many=True)
-        return Response({"success": True, "data": serializer.data})
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        order_id = self.request.query_params.get('order_id')
+        ticket_id = self.request.query_params.get('ticket_id')
+        if order_id:
+            queryset = queryset.filter(order_id=order_id)
+        if ticket_id:
+            queryset = queryset.filter(ticket_id=ticket_id)
+        return queryset
 
 
-class OrderCreateView(APIView):
+class OrderTicketDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = OrderTicket.objects.select_related(
+        'ticket__event', 'ticket_types', 'seat_type', 'order'
+    ).all()
+    serializer_class = OrderTicketSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
+
+
+class NotificationListCreateView(generics.ListCreateAPIView):
+    serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        data = request.data.copy()
-        data['user'] = request.user.id
-
-        serializer = OrderSerializer(data=data, context={'request': request})
-
-        if serializer.is_valid():
-            order = serializer.save()
-            return Response({
-                "success": True,
-                "data": OrderSerializer(order, context={'request': request}).data
-            }, status=status.HTTP_201_CREATED)
-
-        return Response({
-            "success": False,
-            "errors": serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
 
 
-class UserNotificationListView(APIView):
+class NotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_read = True
+        instance.save(update_fields=['is_read'])
+        return Response({"success": True, "message": "Marked as read"})
+
+
+class MessageListCreateView(generics.ListCreateAPIView):
+    serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-        serializer = NotificationSerializer(notifications, many=True)
-        return Response({"success": True, "data": serializer.data})
+    def get_queryset(self):
+        return Message.objects.filter(user=self.request.user).order_by('-created_at')
 
-    def patch(self, request, pk):
-        try:
-            notif = Notification.objects.get(pk=pk, user=request.user)
-        except Notification.DoesNotExist:
-            return Response({"success": False, "error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)
-        notif.is_read = True
-        notif.save()
-        return Response({"success": True, "message": "Notification marked as read"})
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
-class UserMessageListCreateView(APIView):
+class MessageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
 
-    def get(self, request):
-        messages = Message.objects.filter(user=request.user).order_by('-created_at')
-        serializer = MessageSerializer(messages, many=True)
-        return Response({"success": True, "data": serializer.data})
-
-    def post(self, request):
-        serializer = MessageSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        return Message.objects.filter(user=self.request.user)

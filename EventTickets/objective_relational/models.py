@@ -105,8 +105,12 @@ class OrderTicket(models.Model):
     subtotal = models.DecimalField(max_digits=12, decimal_places=2)
 
     class Meta:
-        db_table = "order_ticket"
-        app_label = "objective_relational"
+        unique_together = ('order', 'ticket')
+
+    def save(self, *args, **kwargs):
+        if not self.subtotal:
+            self.subtotal = self.price_per_unit * self.quantity
+        super().save(*args, **kwargs)
 
 
 class Notification(models.Model):
