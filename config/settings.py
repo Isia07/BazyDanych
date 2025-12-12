@@ -102,6 +102,15 @@ relational_database = {
         'PORT': '5432',
     }
 
+objective_database = {
+    'ENGINE': 'django.db.backends.postgresql',
+    'NAME': 'db_object',
+    'USER': 'obj_user',
+    'PASSWORD': 'obj_haslo123',
+    'HOST': 'db_object',
+    'PORT': '5432',
+}
+
 # nosql_database = {
 #     'ENGINE': 'django_mongodb_backend',
 #     'NAME': 'db_nosql',
@@ -109,15 +118,6 @@ relational_database = {
 #     'PASSWORD': '',
 #     'HOST': 'db_nosql',
 #     'PORT': '27017',
-# }
-
-# objective_database = {
-#     'ENGINE': '',
-#     'NAME': '',
-#     'USER': '',
-#     'PASSWORD': '',
-#     'HOST': 'db_objective',
-#     'PORT': '',
 # }
 
 DATABASES = {
