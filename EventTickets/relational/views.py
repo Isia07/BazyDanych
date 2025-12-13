@@ -30,7 +30,7 @@ class RelDiscountDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Discount.objects.using("relational").all()
 
     def perform_update(self, serializer):
-        serializer.save(using="relational")
+        serializer.save()
 
     def perform_destroy(self, instance):
         instance.delete(using="relational")

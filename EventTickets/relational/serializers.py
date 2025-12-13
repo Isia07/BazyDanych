@@ -17,8 +17,9 @@ class DiscountSerializer(serializers.ModelSerializer):
                 return value
 
         if Discount.objects.using('relational').filter(code=value).exists():
-            raise serializers.ValidationError("Kod rabatowy o podanej wartości już istnieje.")
+            raise serializers.ValidationError("Code already exists.")
         return value
 
     def create(self, validated_data):
         return Discount.objects.using("relational").create(**validated_data)
+

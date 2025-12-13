@@ -8,7 +8,7 @@ urlpatterns = [
 
     path('api/v1/rel/auth/register', RelRegisterView.as_view(), name='rel_register'),
     path('api/v1/rel/auth/login', RelLoginView.as_view(), name='rel_login'),
-    path('api/v1/rel/discounts/', RelDiscountListCreateView.as_view(), name='discount_list_create'),
-    path('api/v1/rel/discounts/<int:pk>/', RelDiscountDetailView.as_view(), name='discount_detail'),
+    path('api/v1/rel/discounts/', RelDiscountListCreateView.as_view(), name='rel_discounts'),
+    path('api/v1/rel/discounts/<int:pk>/', RelDiscountDetailView.as_view(), name='rel_discount_detail'),
 
 ]
