@@ -18,10 +18,6 @@ from EventTickets.objective_relational.views import (
 urlpatterns = [
     path('api/v1/obj-rel/auth/register', ObjRelRegister.as_view(), name='obj_rel_register'),
     path('api/v1/obj-rel/auth/login', ObjRelLogin.as_view(), name='obj_rel_login'),
-    path('api/v1/rel/auth/register', RelRegisterView.as_view(), name='rel_register'),
-    path('api/v1/rel/auth/login', RelLoginView.as_view(), name='rel_login'),
-    path('api/v1/rel/discounts/', DiscountListCreateView.as_view(), name='discount_list_create'),
-    path('api/v1/rel/discounts/<int:pk>/', DiscountDetailView.as_view(), name='discount_detail'),
 
     path('api/v1/rel/auth/register', RelRegisterView.as_view(), name='rel_register'),
     path('api/v1/rel/auth/login', RelLoginView.as_view(), name='rel_login'),
@@ -39,6 +35,7 @@ urlpatterns = [
     path('api/v1/rel/notifications/<int:pk>/', RelNotificationDetailView.as_view(), name="rel_notification_detail"),
     path('api/v1/rel/events/', RelEventListCreateView.as_view(), name="rel_events"),
     path('api/v1/rel/events/<int:pk>/', RelEventDetailView.as_view(), name="rel_event_detail"),
+
 
     path('api/v1/obj-rel/discounts/', DiscountObjListCreateView.as_view(), name='obj_rel_discounts'),
     path("api/v1/obj-rel/discounts/<int:id>/", DiscountObjDetailView.as_view(), name="obj_rel_discounts_id"),
