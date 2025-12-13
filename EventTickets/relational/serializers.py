@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Discount, TicketType, Status, EventType, User, Message
+from .models import Discount, TicketType, Status, EventType, User, Message, Notification
 
 
 class DiscountSerializer(serializers.ModelSerializer):
@@ -103,4 +103,16 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return Message.objects.using("relational").create(**validated_data)
+
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.using("relational").all())
+
+    class Meta:
+        model = Notification
+        fields = '__all__'
+
+    def create(self, validated_data):
+        return Notification.objects.using("relational").create(**validated_data)
 
