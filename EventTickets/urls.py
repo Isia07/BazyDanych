@@ -26,4 +26,28 @@ urlpatterns = [
     path('api/v1/rel/events/', RelEventListCreateView.as_view(), name="rel_events"),
     path('api/v1/rel/events/<int:pk>/', RelEventDetailView.as_view(), name="rel_event_detail"),
 
+
+    path('api/v1/obj-rel/discounts/', DiscountObjListCreateView.as_view(), name='obj_rel_discounts'),
+    path("api/v1/obj-rel/discounts/<int:id>/", DiscountObjDetailView.as_view(), name="obj_rel_discounts_id"),
+    path('api/v1/obj-rel/event-types/', EventTypeObjListCreateView.as_view(), name='obj_rel_event_types'),
+    path('api/v1/obj-rel/event-types/<int:id>/', EventTypeObjDetailView.as_view(), name='obj_rel_event_types_id'),
+    path('api/v1/obj-rel/seat-types/', SeatTypeObjListCreateView.as_view(), name='obj_rel_seat_types'),
+    path('api/v1/obj-rel/seat-types/<int:id>/', SeatTypeObjDetailView.as_view(), name='obj_rel_seat_types_id'),
+    path('api/v1/obj-rel/statuses/', StatusObjListCreateView.as_view(), name='obj_rel_statuses'),
+    path('api/v1/obj-rel/statuses/<int:id>/', StatusObjDetailView.as_view(), name='obj_rel_statuses_id'),
+    path('api/v1/obj-rel/ticket-types/', TicketTypeObjListCreateView.as_view(), name='obj_rel_ticket_types'),
+    path('api/v1/obj-rel/ticket-types/<int:id>/', TicketTypeObjDetailView.as_view(), name='obj_rel_ticket_types_id'),
+
+    path('api/v1/obj-rel/events', EventListCreateView.as_view(), name='obj_rel_event_list_create'),
+    path('api/v1/obj-rel/events/<int:pk>', EventDetailView.as_view(), name='obj_rel_event_detail'),
+
+    path('api/v1/obj-rel/tickets', TicketListCreateView.as_view(), name='obj_rel_ticket_list_create'),
+
+    path('api/v1/obj-rel/orders', UserOrderListView.as_view(), name='obj_rel_user_orders'),
+    path('api/v1/obj-rel/orders/create', OrderCreateView.as_view(), name='obj_rel_order_create'),
+
+    path('api/v1/obj-rel/notifications', UserNotificationListView.as_view(), name='obj_rel_notifications'),
+    path('api/v1/obj-rel/notifications/<int:pk>/read', UserNotificationListView.as_view(), name='obj_rel_notification_read'),
+    path('api/v1/obj-rel/messages', UserMessageListCreateView.as_view(), name='obj_rel_messages'),
+
 ]
