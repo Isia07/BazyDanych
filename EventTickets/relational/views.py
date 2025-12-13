@@ -1,7 +1,7 @@
 from EventTickets.shared.views import BaseRegisterView, BaseLoginView
 from rest_framework import status, generics
-from .models import Discount, TicketType
-from .serializers import DiscountSerializer, TicketTypeSerializer
+from .models import Discount, TicketType, Status
+from .serializers import DiscountSerializer, TicketTypeSerializer, StatusSerializer
 
 
 class RelRegisterView(BaseRegisterView):
@@ -34,6 +34,8 @@ class RelDiscountDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.delete(using="relational")
 
+
+
 class RelTicketTypeListCreateView(generics.ListCreateAPIView):
     serializer_class = TicketTypeSerializer
 
@@ -54,3 +56,29 @@ class RelTicketTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         instance.delete(using="relational")
+
+
+
+class RelStatusListCreateView(generics.ListCreateAPIView):
+    serializer_class = StatusSerializer
+
+    def get_queryset(self):
+        return Status.objects.using("relational").all()
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+class RelStatusDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = StatusSerializer
+
+    def get_queryset(self):
+        return Status.objects.using("relational").all()
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        instance.delete(using="relational")
+
+
+
