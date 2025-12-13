@@ -21,7 +21,7 @@ class EventType(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
     class Meta:
-        db_table = "event_type"
+        db_table = "eventtype"
         app_label = "relational"
 
     def __str__(self):
@@ -34,20 +34,7 @@ class TicketType(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
     class Meta:
-        db_table = "ticket_type"
-        app_label = "relational"
-
-    def __str__(self):
-        return self.name
-
-
-
-class SeatType(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, unique=True)
-
-    class Meta:
-        db_table = "seat_type"
+        db_table = "tickettype"
         app_label = "relational"
 
     def __str__(self):
@@ -82,30 +69,15 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.ForeignKey(Status, on_delete=models.PROTECT)
+    base_price = models.DecimalField(max_digits=5, decimal_places=2)
+    quantity = models.IntegerField()
 
     class Meta:
-        db_table = "event_rel"
+        db_table = "revent"
         app_label = "relational"
 
     def __str__(self):
         return self.name
-
-
-
-class Ticket(models.Model):
-    id = models.AutoField(primary_key=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    quantity = models.IntegerField()
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = "ticket_rel"
-        app_label = "relational"
-
 
 
 class Order(models.Model):
@@ -115,23 +87,22 @@ class Order(models.Model):
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
 
     class Meta:
-        db_table = "order_rel"
+        db_table = "rorder"
         app_label = "relational"
 
 
-
-class OrderTickets(models.Model):
+class Ticket(models.Model):
     id = models.AutoField(primary_key=True)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
-    ticket_types = models.ForeignKey(TicketType, on_delete=models.PROTECT)
-    seat_type = models.ForeignKey(SeatType, on_delete=models.PROTECT)
-    quantity = models.PositiveIntegerField()
-    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
-    subtotal = models.DecimalField(max_digits=12, decimal_places=2)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    ticket_type = models.ForeignKey(TicketType, on_delete=models.SET_NULL, null=True, blank=True)
+    discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    quantity = models.IntegerField()
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        db_table = "order_tickets"
+        db_table = "rticket"
         app_label = "relational"
 
 
@@ -144,7 +115,7 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "notification_rel"
+        db_table = "rnotification"
         app_label = "relational"
 
 
@@ -156,7 +127,7 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "message_rel"
+        db_table = "rmessage"
         app_label = "relational"
 
 
