@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Discount, TicketType, Status
+from .models import Discount, TicketType, Status, EventType
 
 
 class DiscountSerializer(serializers.ModelSerializer):
@@ -69,3 +69,25 @@ class StatusSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return Status.objects.using('relational').create(**validated_data)
 
+
+class EventTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventType
+        fields = '__all__'
+        extra_kwargs = {
+            'name': {'validators': [] }
+        }
+
+    def validate_name(self, value):
+        instance = getattr(self, 'instance', None)
+
+        if instance:
+            if instance.name == value:
+                return value
+
+        if EventType.objects.using('relational').filter(name=value).exists():
+            raise serializers.ValidationError("This name already exists.")
+        return value
+
+    def create(self, validated_data):
+        return EventType.objects.using("relational").create(**validated_data)
