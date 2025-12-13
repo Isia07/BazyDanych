@@ -2,7 +2,7 @@ from django.urls import path
 from EventTickets.objective_relational.views import RegisterView as ObjRelRegister, LoginView as ObjRelLogin
 from .relational.views import RelRegisterView, RelLoginView, RelDiscountListCreateView, RelDiscountDetailView, \
     RelTicketTypeListCreateView, RelTicketTypeDetailView, RelStatusListCreateView, RelStatusDetailView, \
-    RelEventTypeListCreateView, RelEventTypeDetailView
+    RelEventTypeListCreateView, RelEventTypeDetailView, RelMessageListCreateView, RelMessageDetailView
 
 urlpatterns = [
     path('api/v1/obj-rel/auth/register', ObjRelRegister.as_view(), name='obj_rel_register'),
@@ -18,5 +18,7 @@ urlpatterns = [
     path('api/v1/rel/statuses/<int:pk>/', RelStatusDetailView.as_view(), name='rel_status_detail'),
     path('api/v1/rel/event-types/', RelEventTypeListCreateView.as_view(), name='rel_event_types'),
     path('api/v1/rel/event-types/<int:pk>/', RelEventTypeDetailView.as_view(), name='rel_event_type_detail'),
+    path('api/v1/rel/messages/', RelMessageListCreateView.as_view(), name="rel_messages"),
+    path('api/v1/rel/messages/<int:pk>/', RelMessageDetailView.as_view(), name="rel_message_detail"),
 
 ]
