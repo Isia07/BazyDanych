@@ -66,7 +66,7 @@ class BaseLoginView(APIView):
                         "email": user.email,
                         "name": user.name or "",
                         "surname": user.surname or "",
-                        "role": user.role
+                        "is_active": user.is_active
                     }
                 }, status=200)
             else:
