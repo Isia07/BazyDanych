@@ -3,7 +3,7 @@ from EventTickets.objective_relational.views import RegisterView as ObjRelRegist
 from .relational.views import RelRegisterView, RelLoginView, RelDiscountListCreateView, RelDiscountDetailView, \
     RelTicketTypeListCreateView, RelTicketTypeDetailView, RelStatusListCreateView, RelStatusDetailView, \
     RelEventTypeListCreateView, RelEventTypeDetailView, RelMessageListCreateView, RelMessageDetailView, \
-    RelNotificationListCreateView, RelNotificationDetailView
+    RelNotificationListCreateView, RelNotificationDetailView, RelEventListCreateView, RelEventDetailView
 
 urlpatterns = [
     path('api/v1/obj-rel/auth/register', ObjRelRegister.as_view(), name='obj_rel_register'),
@@ -23,5 +23,7 @@ urlpatterns = [
     path('api/v1/rel/messages/<int:pk>/', RelMessageDetailView.as_view(), name="rel_message_detail"),
     path('api/v1/rel/notifications/', RelNotificationListCreateView.as_view(), name="rel_notifications"),
     path('api/v1/rel/notifications/<int:pk>/', RelNotificationDetailView.as_view(), name="rel_notification_detail"),
+    path('api/v1/rel/events/', RelEventListCreateView.as_view(), name="rel_events"),
+    path('api/v1/rel/events/<int:pk>/', RelEventDetailView.as_view(), name="rel_event_detail"),
 
 ]
