@@ -1,18 +1,15 @@
-from django.shortcuts import render
-from EventTickets.shared.views import BaseRegisterView, BaseLoginView
-from rest_framework.views import APIView
+from rest_framework import permissions, generics
 from rest_framework.response import Response
-from rest_framework import status, permissions, generics
 from .models import (
-    Event, Ticket, Order, OrderTicket, Notification, Message,
-    StatusObj, EventTypeObj, TicketTypeObj, SeatTypeObj, DiscountObj
+    Event, Ticket, Order, Notification, Message,
+    StatusObj, EventTypeObj, TicketTypeObj, DiscountObj
 )
 from .serializers import (
     EventSerializer, TicketSerializer, OrderSerializer,
-    OrderTicketSerializer, NotificationSerializer, MessageSerializer,
-    StatusObjSerializer, EventTypeObjSerializer, TicketTypeObjSerializer,
-    SeatTypeObjSerializer, DiscountObjSerializer
+    NotificationSerializer, MessageSerializer,
+    StatusObjSerializer, EventTypeObjSerializer, TicketTypeObjSerializer, DiscountObjSerializer, OrderCreateSerializer
 )
+from EventTickets.shared.views import BaseRegisterView, BaseLoginView
 
 
 class RegisterView(BaseRegisterView):
@@ -26,11 +23,7 @@ class LoginView(BaseLoginView):
 class StatusObjListCreateView(generics.ListCreateAPIView):
     queryset = StatusObj.objects.all()
     serializer_class = StatusObjSerializer
-
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class StatusObjDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -86,27 +79,6 @@ class TicketTypeObjDetailView(generics.RetrieveUpdateDestroyAPIView):
         return [permissions.IsAuthenticated()]
 
 
-class SeatTypeObjListCreateView(generics.ListCreateAPIView):
-    queryset = SeatTypeObj.objects.all()
-    serializer_class = SeatTypeObjSerializer
-
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
-
-
-class SeatTypeObjDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = SeatTypeObj.objects.all()
-    serializer_class = SeatTypeObjSerializer
-    lookup_field = "id"
-
-    def get_permissions(self):
-        if self.request.method == "GET":
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
-
-
 class DiscountObjListCreateView(generics.ListCreateAPIView):
     queryset = DiscountObj.objects.all()
     serializer_class = DiscountObjSerializer
@@ -131,42 +103,46 @@ class DiscountObjDetailView(generics.RetrieveUpdateDestroyAPIView):
 class EventListCreateView(generics.ListCreateAPIView):
     queryset = Event.objects.select_related('event_type', 'status').all()
     serializer_class = EventSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.select_related('event_type', 'status').all()
     serializer_class = EventSerializer
-    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'id'
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class TicketListCreateView(generics.ListCreateAPIView):
-    queryset = Ticket.objects.select_related('event', 'discount').all()
+    queryset = Ticket.objects.select_related('event', 'discount', 'ticket_type', 'order').all()
     serializer_class = TicketSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Ticket.objects.select_related('event', 'discount').all()
+    queryset = Ticket.objects.select_related('event', 'discount', 'ticket_type', 'order').all()
     serializer_class = TicketSerializer
-    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'id'
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class OrderListCreateView(generics.ListCreateAPIView):
-    serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).prefetch_related(
-            'orderticket_set__ticket',
-            'orderticket_set__ticket_types',
-            'orderticket_set__seat_type'
+            'tickets__event',
+            'tickets__ticket_type',
+            'tickets__discount'
         )
 
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return OrderCreateSerializer
+        return OrderSerializer
+
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save()
 
 
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -176,37 +152,10 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).prefetch_related(
-            'orderticket_set__ticket',
-            'orderticket_set__ticket_types',
-            'orderticket_set__seat_type'
+            'tickets__event',
+            'tickets__ticket_type',
+            'tickets__discount'
         )
-
-
-class OrderTicketListCreateView(generics.ListCreateAPIView):
-    queryset = OrderTicket.objects.select_related(
-        'ticket__event', 'ticket_types', 'seat_type', 'order'
-    ).all()
-    serializer_class = OrderTicketSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        order_id = self.request.query_params.get('order_id')
-        ticket_id = self.request.query_params.get('ticket_id')
-        if order_id:
-            queryset = queryset.filter(order_id=order_id)
-        if ticket_id:
-            queryset = queryset.filter(ticket_id=ticket_id)
-        return queryset
-
-
-class OrderTicketDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = OrderTicket.objects.select_related(
-        'ticket__event', 'ticket_types', 'seat_type', 'order'
-    ).all()
-    serializer_class = OrderTicketSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'id'
 
 
 class NotificationListCreateView(generics.ListCreateAPIView):
