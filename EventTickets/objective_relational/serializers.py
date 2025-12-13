@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -128,8 +130,35 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         if value is not None:
             now = timezone.now()
             if value.valid_from > now or value.valid_to < now:
-                raise serializers.ValidationError("Invalid discount code (check date)")
+                raise serializers.ValidationError("Invalid discount code (check validity dates)")
         return value
+
+    def validate_tickets(self, tickets_data):
+        quantity_per_event = defaultdict(int)
+
+        for ticket_data in tickets_data:
+            event = ticket_data['event']
+            qty = ticket_data['quantity']
+            quantity_per_event[event.id] += qty
+
+            if qty > event.quantity:
+                raise serializers.ValidationError(
+                    f"For event '{event.name}' only {event.quantity} tickets are available, but you are trying to buy {qty} in one position"
+                )
+
+        for event_id, total_qty in quantity_per_event.items():
+            event = next(t['event'] for t in tickets_data if t['event'].id == event_id)
+            if total_qty > event.quantity:
+                raise serializers.ValidationError(
+                    f"For event '{event.name}' only {event.quantity} tickets are available, "
+                    f"but you are trying to buy {total_qty} in the order"
+                )
+
+        return tickets_data
+
+    def validate(self, data):
+        data['tickets'] = self.validate_tickets(data['tickets'])
+        return data
 
     @transaction.atomic
     def create(self, validated_data):
@@ -145,6 +174,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
         total = Decimal('0.00')
 
+        quantity_to_subtract = defaultdict(int)
+
         for ticket_data in tickets_data:
             event = ticket_data['event']
             base_price = event.base_price
@@ -158,6 +189,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
             Ticket.objects.create(order=order, **ticket_data)
 
+            quantity_to_subtract[event] += ticket_data['quantity']
+
         if order.discount:
             code_factor = Decimal('1') - order.discount.discount_percentage
             total = total * code_factor
@@ -166,6 +199,10 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
         order.total_price = total
         order.save()
+
+        for event, qty in quantity_to_subtract.items():
+            event.quantity -= qty
+            event.save(update_fields=['quantity'])
 
         return order
 
