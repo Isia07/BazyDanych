@@ -81,6 +81,23 @@ class TicketSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at', 'order_id')
 
 
+class NotificationCreateSerializer(serializers.ModelSerializer):
+    message_id = serializers.PrimaryKeyRelatedField(
+        queryset=Message.objects.all(),
+        write_only=True
+    )
+
+    class Meta:
+        model = Notification
+        fields = ('id', 'text', 'is_read', 'created_at', 'message_id')
+        read_only_fields = ('id', 'is_read', 'created_at')
+
+    def create(self, validated_data):
+        message = validated_data.pop('message_id')
+        validated_data['user'] = message.user
+        return super().create(validated_data)
+
+
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
