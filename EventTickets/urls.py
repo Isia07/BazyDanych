@@ -14,7 +14,7 @@ from .objective_relational.views import (
     EventListCreateView, EventDetailView,
     TicketListCreateView, TicketDetailView,
     OrderListCreateView, OrderDetailView,
-    NotificationListCreateView, NotificationDetailView,
+    NotificationListCreateView, NotificationDetailView, MessageAllListView,
 )
 
 urlpatterns = [
@@ -61,6 +61,9 @@ urlpatterns = [
     # messages
     path('api/v1/obj-rel/messages/', MessageListCreateView.as_view(), name='obj_rel_messages'),
     path('api/v1/rel/messages/', RelMessageListCreateView.as_view(), name="rel_messages"),
+
+    #messages all
+    path('api/v1/obj-rel/messages/all/', MessageAllListView.as_view(), name='obj_rel_messages_all'),
 
     # messages id
     path('api/v1/obj-rel/messages/<int:id>/', MessageDetailView.as_view(), name='obj_rel_message_detail'),
