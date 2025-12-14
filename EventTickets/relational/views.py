@@ -2,9 +2,9 @@ from rest_framework.response import Response
 
 from EventTickets.shared.views import BaseRegisterView, BaseLoginView
 from rest_framework import status, generics
-from .models import Discount, TicketType, Status, EventType, Message, Notification, Event, Ticket
+from .models import Discount, TicketType, Status, EventType, Message, Notification, Event, Ticket, Order
 from .serializers import DiscountSerializer, TicketTypeSerializer, StatusSerializer, EventTypeSerializer, \
-    MessageSerializer, NotificationSerializer, EventSerializer, TicketSerializer
+    MessageSerializer, NotificationSerializer, EventSerializer, TicketSerializer, OrderSerializer, OrderCreateSerializer
 from ..objective_relational.serializers import TicketSerializer
 
 
@@ -198,6 +198,7 @@ class RelTicketListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save()
 
+
 class RelTicketDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TicketSerializer
 
@@ -209,6 +210,41 @@ class RelTicketDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         instance.delete(using="relational")
+
+
+
+class RelOrderListCreateView(generics.ListCreateAPIView):
+    def get_queryset(self):
+        return Order.objects.using("relational").filter(user=self.request.user).prefetch_related(
+            'tickets__event',
+            'tickets__ticket_type',
+            'tickets__discount'
+        )
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return OrderCreateSerializer
+        return OrderSerializer
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class RelOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        return Order.objects.using('relational').filter(user=self.request.user).prefetch_related(
+            'tickets__event',
+            'tickets__ticket_type',
+            'tickets__discount'
+        )
+
+
+
+
+
+
 
 
 
