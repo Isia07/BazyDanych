@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Discount, TicketType, Status, EventType, User, Message, Notification, Event
+from .models import Discount, TicketType, Status, EventType, User, Message, Notification, Event, Ticket, Order
 
 
 class DiscountSerializer(serializers.ModelSerializer):
@@ -128,4 +128,13 @@ class EventSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return Event.objects.using("relational").create(**validated_data)
+
+class TicketSerializer(serializers.ModelSerializer):
+    event = serializers.PrimaryKeyRelatedField(queryset=Ticket.objects.using("relational").all())
+    ticket_type = serializers.PrimaryKeyRelatedField(queryset=TicketType.objects.using("relational").all())
+    order = serializers.PrimaryKeyRelatedField(queryset=Order.objects.using("relational").all())
+
+    class Meta:
+        model = Ticket
+        fields = '__all__'
 

@@ -3,7 +3,7 @@ from .relational.views import RelRegisterView, RelLoginView, \
     RelDiscountListCreateView, RelDiscountDetailView, RelTicketTypeListCreateView, RelTicketTypeDetailView, \
     RelStatusListCreateView, RelStatusDetailView, RelEventTypeListCreateView, RelEventTypeDetailView, \
     RelMessageListCreateView, RelMessageDetailView, RelNotificationListCreateView, RelNotificationDetailView, \
-    RelEventListCreateView, RelEventDetailView
+    RelEventListCreateView, RelEventDetailView, RelTicketListCreateView, RelTicketDetailView
 from .objective_relational.views import (
     RegisterView as ObjRelRegister, LoginView as ObjRelLogin,
     StatusObjListCreateView, StatusObjDetailView,
@@ -86,9 +86,11 @@ urlpatterns = [
 
     # tickets
     path('api/v1/obj-rel/tickets/', TicketListCreateView.as_view(), name='obj_rel_tickets'),
+    path('api/v1/rel/tickets/', RelTicketListCreateView.as_view(), name="rel_tickets"),
 
     # tickets id
     path('api/v1/obj-rel/tickets/<int:id>/', TicketDetailView.as_view(), name='obj_rel_ticket_detail'),
+    path('api/v1/rel/tickets/<int:id>/', RelTicketDetailView.as_view(), name="rel_ticket_detail"),
 
     # orders
     path('api/v1/obj-rel/orders/', OrderListCreateView.as_view(), name='obj_rel_orders'),
