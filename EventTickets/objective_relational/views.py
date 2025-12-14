@@ -7,7 +7,8 @@ from .models import (
 from .serializers import (
     EventSerializer, TicketSerializer, OrderSerializer,
     NotificationSerializer, MessageSerializer,
-    StatusObjSerializer, EventTypeObjSerializer, TicketTypeObjSerializer, DiscountObjSerializer, OrderCreateSerializer
+    StatusObjSerializer, EventTypeObjSerializer, TicketTypeObjSerializer, DiscountObjSerializer, OrderCreateSerializer,
+    NotificationCreateSerializer
 )
 from EventTickets.shared.views import BaseRegisterView, BaseLoginView
 
@@ -159,11 +160,15 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class NotificationListCreateView(generics.ListCreateAPIView):
-    serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
+        return Notification.objects.filter(user=self.request.user, is_read=False).order_by('-created_at')
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return NotificationCreateSerializer
+        return NotificationSerializer
 
 
 class NotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -186,7 +191,7 @@ class MessageListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Message.objects.filter(user=self.request.user).order_by('-created_at')
+        return Message.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -198,4 +203,11 @@ class MessageDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
     def get_queryset(self):
-        return Message.objects.filter(user=self.request.user)
+        return Message.objects
+
+class MessageAllListView(generics.ListAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Message.objects.all().order_by('-created_at')
