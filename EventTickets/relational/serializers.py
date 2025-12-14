@@ -138,3 +138,15 @@ class TicketSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = '__all__'
 
+    def validate(self, attrs):
+        event = attrs['event']
+        quantity = attrs['quantity']
+
+        if event.quantity < quantity:
+            raise serializers.ValidationError(
+                f"{event.quantity} tickets left"
+            )
+        return attrs
+
+
+
