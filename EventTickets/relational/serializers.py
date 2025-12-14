@@ -158,7 +158,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     tickets = TicketSerializer(many=True, write_only=True)
-    discount = serializers.PrimaryKeyRelatedField(queryset=Discount.objects.all(),crequired=False, allow_null=True, write_only=True)
+    discount = serializers.PrimaryKeyRelatedField(queryset=Discount.objects.all(),required=False, allow_null=True, write_only=True)
     total_price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
 
     class Meta:
