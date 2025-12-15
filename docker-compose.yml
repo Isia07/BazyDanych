@@ -44,7 +44,7 @@ services:
     image: postgres:16-alpine
     environment:
       - POSTGRES_USER=obj_user
-      - POSTGRES_PASSWORD=obj_haslo123
+      - POSTGRES_PASSWORD=obj_haslo
       - POSTGRES_DB=db_object
     ports:
       - "5435:5432"
@@ -55,17 +55,17 @@ services:
 
   # ──────────────────────── relational  ────────────────────────
   db_relational:
-      image: postgres:16-alpine
-      environment:
-        - POSTGRES_USER=postgres
-        - POSTGRES_PASSWORD=postgres
-        - POSTGRES_DB=db_relational
-      ports:
-        - "5434:5432"
-      volumes:
-        - pgdata_relational:/var/lib/postgresql/data
-      healthcheck:
-        test: ["CMD", "pg_isready", "-U", "postgres"]
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db_relational
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata_relational:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
 
   # ──────────────────────── NoSQL ────────────────────────
   # db_nosql:

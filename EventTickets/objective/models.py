@@ -1,120 +1,159 @@
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
-from django.contrib.auth import get_user_model
-from dataclasses import dataclass, asdict
 
-User = get_user_model()
 
-@dataclass
-class TypeObj:
-    name: str
+class Users(AbstractUser):
+    email = models.EmailField(unique=True)
+    name = models.CharField(max_length=150)
+    surname = models.CharField(max_length=150)
+    is_admin = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-@dataclass
-class StatusObj(TypeObj):
-    pass
+    # Fix: Add unique related_names to avoid clash with shared.User
+    groups = models.ManyToManyField(
+        Group,
+        related_name="objective_users_groups",
+        blank=True,
+        help_text="The groups this user belongs to.",
+        verbose_name="groups",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name="objective_users_permissions",
+        blank=True,
+        help_text="Specific permissions for this user.",
+        verbose_name="user permissions",
+    )
 
-@dataclass
-class EventTypeObj(TypeObj):
-    pass
+    REQUIRED_FIELDS = ["name", "surname"]
+    USERNAME_FIELD = "email"
 
-@dataclass
-class TicketTypeObj(TypeObj):
-    pass
+    class Meta:
+        db_table = "users_obj_obj"
+        app_label = "objective"
 
-@dataclass
-class SeatTypeObj(TypeObj):
-    pass
+    def __str__(self):
+        return self.email
 
-class DiscountObj(models.Model):
+
+class Status(models.Model):
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = "status_obj_obj"
+        app_label = "objective"
+
+    def __str__(self):
+        return self.name
+
+
+class EventTypes(models.Model):
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = "event_types_obj_obj"
+        app_label = "objective"
+
+    def __str__(self):
+        return self.name
+
+
+class Discounts(models.Model):
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     code = models.CharField(max_length=50, unique=True)
     valid_from = models.DateTimeField()
     valid_to = models.DateTimeField()
 
     class Meta:
-        db_table = "discount_obj_obj"
+        db_table = "discounts_obj_obj"
         app_label = "objective"
 
     def __str__(self):
         return self.code
 
-class Event(models.Model):
-    event_type = models.JSONField(default=dict)
-    status = models.JSONField(default=dict)
+
+class TicketTypes(models.Model):
+    name = models.CharField(max_length=100)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    class Meta:
+        db_table = "ticket_types_obj_obj"
+        app_label = "objective"
+
+    def __str__(self):
+        return self.name
+
+
+class Events(models.Model):
+    event_type = models.ForeignKey(EventTypes, on_delete=models.PROTECT)
+    status = models.ForeignKey(Status, on_delete=models.PROTECT)
     localization = models.TextField()
     name = models.CharField(max_length=255)
     description = models.TextField()
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
+    base_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "event_obj"
+        db_table = "events_obj_obj"
         app_label = "objective"
-
-    def set_status(self, status: StatusObj):
-        self.status = asdict(status)
-
-    def set_event_type(self, event_type: EventTypeObj):
-        self.event_type = asdict(event_type)
 
     def __str__(self):
         return self.name
 
-class Ticket(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+
+class Orders(models.Model):
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
     discount = models.ForeignKey(
-        DiscountObj, on_delete=models.SET_NULL, null=True, blank=True
+        Discounts, on_delete=models.SET_NULL, null=True, blank=True
     )
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
+    purchase_date = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        db_table = "orders_obj_obj"
+        app_label = "objective"
+
+    def __str__(self):
+        return str(self.id)
+
+
+class Tickets(models.Model):
+    event = models.ForeignKey(Events, on_delete=models.CASCADE)
+    order = models.ForeignKey(Orders, on_delete=models.CASCADE)
+    ticket_type = models.ForeignKey(TicketTypes, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
-    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "ticket_obj"
+        db_table = "tickets_obj_obj"
         app_label = "objective"
 
-@dataclass
-class OrderTicket:
-    ticket_id: int
-    quantity: int
-    price_per_unit: float
-    subtotal: float
-    ticket_types: dict
-    seat_type: dict
+    def __str__(self):
+        return str(self.id)
 
-class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="obj_orders")
-    purchase_date = models.DateTimeField(auto_now_add=True)
-    total_price = models.DecimalField(max_digits=12, decimal_places=2)
-    tickets = models.JSONField(default=list)
+
+class Messages(models.Model):
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "order_obj"
+        db_table = "messages_obj_obj"
         app_label = "objective"
 
-    def add_ticket(self, ticket: OrderTicket):
-        if self.tickets is None:
-            self.tickets = []
-        self.tickets.append(asdict(ticket))
 
-class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="obj_notifications")
+class Notifications(models.Model):
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
     text = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "notification_obj"
-        app_label = "objective"
-
-class Message(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="obj_Messages")
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "message_obj"
+        db_table = "notifications_obj_obj"
         app_label = "objective"
