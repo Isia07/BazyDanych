@@ -32,7 +32,7 @@ urlpatterns = [
     path('api/v1/rel/discounts/', RelDiscountListCreateView.as_view(), name='rel_discounts'),
 
     # discounts id
-    path("api/v1/obj-rel/discounts/<int:id>/", DiscountObjDetailView.as_view(), name="obj_rel_discounts_id"),
+    path("api/v1/obj-rel/discounts/<int:pk>/", DiscountObjDetailView.as_view(), name="obj_rel_discounts_id"),
     path('api/v1/rel/discounts/<int:pk>/', RelDiscountDetailView.as_view(), name='rel_discount_detail'),
 
     # ticket-types
@@ -40,7 +40,7 @@ urlpatterns = [
     path('api/v1/rel/ticket-types/', RelTicketTypeListCreateView.as_view(), name='rel_ticket_types'),
 
     # ticket-types id
-    path('api/v1/obj-rel/ticket-types/<int:id>/', TicketTypeObjDetailView.as_view(), name='obj_rel_ticket_types_id'),
+    path('api/v1/obj-rel/ticket-types/<int:pk>/', TicketTypeObjDetailView.as_view(), name='obj_rel_ticket_types_id'),
     path('api/v1/rel/ticket-types/<int:pk>/', RelTicketTypeDetailView.as_view(), name='rel_ticket_type_detail'),
 
     # statuses
@@ -48,7 +48,7 @@ urlpatterns = [
     path('api/v1/rel/statuses/', RelStatusListCreateView.as_view(), name='rel_statuses'),
 
     # statuses id
-    path('api/v1/obj-rel/statuses/<int:id>/', StatusObjDetailView.as_view(), name='obj_rel_statuses_id'),
+    path('api/v1/obj-rel/statuses/<int:pk>/', StatusObjDetailView.as_view(), name='obj_rel_statuses_id'),
     path('api/v1/rel/statuses/<int:pk>/', RelStatusDetailView.as_view(), name='rel_status_detail'),
 
     # event-type
@@ -56,7 +56,7 @@ urlpatterns = [
     path('api/v1/rel/event-types/', RelEventTypeListCreateView.as_view(), name='rel_event_types'),
 
     # event-type id
-    path('api/v1/obj-rel/event-types/<int:id>/', EventTypeObjDetailView.as_view(), name='obj_rel_event_types_id'),
+    path('api/v1/obj-rel/event-types/<int:pk>/', EventTypeObjDetailView.as_view(), name='obj_rel_event_types_id'),
     path('api/v1/rel/event-types/<int:pk>/', RelEventTypeDetailView.as_view(), name='rel_event_type_detail'),
 
     # messages
@@ -68,7 +68,7 @@ urlpatterns = [
     path('api/v1/rel/messages/all/', RelMessageAllListView.as_view(), name='obj_rel_messages_all'),
 
     # messages id
-    path('api/v1/obj-rel/messages/<int:id>/', MessageDetailView.as_view(), name='obj_rel_message_detail'),
+    path('api/v1/obj-rel/messages/<int:pk>/', MessageDetailView.as_view(), name='obj_rel_message_detail'),
     path('api/v1/rel/messages/<int:pk>/', RelMessageDetailView.as_view(), name="rel_message_detail"),
 
     # notifications
@@ -77,7 +77,7 @@ urlpatterns = [
 
 
     # notifications id
-    path('api/v1/obj-rel/notifications/<int:id>/', NotificationDetailView.as_view(),
+    path('api/v1/obj-rel/notifications/<int:pk>/', NotificationDetailView.as_view(),
          name='obj_rel_notification_detail'),
     path('api/v1/rel/notifications/<int:pk>/', RelNotificationDetailView.as_view(), name="rel_notification_detail"),
 
@@ -94,14 +94,14 @@ urlpatterns = [
     path('api/v1/rel/tickets/', RelTicketListCreateView.as_view(), name="rel_tickets"),
 
     # tickets id
-    path('api/v1/obj-rel/tickets/<int:id>/', TicketDetailView.as_view(), name='obj_rel_ticket_detail'),
-    path('api/v1/rel/tickets/<int:id>/', RelTicketDetailView.as_view(), name="rel_ticket_detail"),
+    path('api/v1/obj-rel/tickets/<int:pk>/', TicketDetailView.as_view(), name='obj_rel_ticket_detail'),
+    path('api/v1/rel/tickets/<int:pk>/', RelTicketDetailView.as_view(), name="rel_ticket_detail"),
 
     # orders
     path('api/v1/obj-rel/orders/', OrderListCreateView.as_view(), name='obj_rel_orders'),
     path('api/v1/rel/orders/', RelOrderListCreateView.as_view(), name="rel_orders"),
 
     # orders id
-    path('api/v1/obj-rel/orders/<int:id>/', OrderDetailView.as_view(), name='obj_rel_order_detail'),
-    path('api/v1/rel/orders/<int:id>/', RelOrderDetailView.as_view(), name="rel_order_detail"),
+    path('api/v1/obj-rel/orders/<int:pk>/', OrderDetailView.as_view(), name='obj_rel_order_detail'),
+    path('api/v1/rel/orders/<int:pk>/', RelOrderDetailView.as_view(), name="rel_order_detail"),
 ]
