@@ -40,7 +40,7 @@ class StatusObjDetailView(generics.RetrieveUpdateDestroyAPIView):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
-        return TicketTypeObj.objects.using("objective_relational").all()
+        return StatusObj.objects.using("objective_relational").all()
 
 
 
