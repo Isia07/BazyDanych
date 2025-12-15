@@ -22,45 +22,56 @@ class LoginView(BaseLoginView):
 
 
 class StatusObjListCreateView(generics.ListCreateAPIView):
-    queryset = StatusObj.objects.all()
+    # queryset = StatusObj.objects.all()
     serializer_class = StatusObjSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        return StatusObj.objects.using("objective_relational").all()
 
 class StatusObjDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = StatusObj.objects.all()
+    # queryset = StatusObj.objects.all()
     serializer_class = StatusObjSerializer
-    lookup_field = "id"
+    # lookup_field = "id"
 
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        return TicketTypeObj.objects.using("objective_relational").all()
+
 
 
 class EventTypeObjListCreateView(generics.ListCreateAPIView):
-    queryset = EventTypeObj.objects.all()
+    # queryset = EventTypeObj.objects.all()
     serializer_class = EventTypeObjSerializer
 
     def get_permissions(self):
         if self.request.method == "POST":
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
+
+    def get_queryset(self):
+        return EventTypeObj.objects.using("objective_relational").all()
 
 
 class EventTypeObjDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = EventTypeObj.objects.all()
+    # queryset = EventTypeObj.objects.all()
     serializer_class = EventTypeObjSerializer
-    lookup_field = "id"
+    # lookup_field = "id"
 
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
+    def get_queryset(self):
+        return EventTypeObj.objects.using("objective_relational").all()
 
 class TicketTypeObjListCreateView(generics.ListCreateAPIView):
-    queryset = TicketTypeObj.objects.all()
+    # queryset = TicketTypeObj.objects.all()
     serializer_class = TicketTypeObjSerializer
 
     def get_permissions(self):
@@ -68,20 +79,25 @@ class TicketTypeObjListCreateView(generics.ListCreateAPIView):
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
+    def get_queryset(self):
+        return TicketTypeObj.objects.using("objective_relational").all()
 
 class TicketTypeObjDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = TicketTypeObj.objects.all()
+    # queryset = TicketTypeObj.objects.all()
     serializer_class = TicketTypeObjSerializer
-    lookup_field = "id"
+    # lookup_field = "id"
 
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        return TicketTypeObj.objects.using("objective_relational").all()
 
 
 class DiscountObjListCreateView(generics.ListCreateAPIView):
-    queryset = DiscountObj.objects.all()
+    # queryset = DiscountObj.objects.all()
     serializer_class = DiscountObjSerializer
 
     def get_permissions(self):
@@ -89,49 +105,64 @@ class DiscountObjListCreateView(generics.ListCreateAPIView):
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
+    def get_queryset(self):
+        return DiscountObj.objects.using("objective_relational").all()
+
 
 class DiscountObjDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = DiscountObj.objects.all()
+    # queryset = DiscountObj.objects.all()
     serializer_class = DiscountObjSerializer
-    lookup_field = "id"
+    # lookup_field = "id"
 
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
+    def get_queryset(self):
+        return DiscountObj.objects.using("objective_relational").all()
+
 
 class EventListCreateView(generics.ListCreateAPIView):
-    queryset = Event.objects.select_related('event_type', 'status').all()
+    # queryset = Event.objects.select_related('event_type', 'status').all()
     serializer_class = EventSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        return Event.objects.using("objective_relational").select_related('event_type', 'status').all()
 
 class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Event.objects.select_related('event_type', 'status').all()
+    # queryset = Event.objects.select_related('event_type', 'status').all()
     serializer_class = EventSerializer
-    lookup_field = 'id'
+    # lookup_field = 'id'
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Event.objects.using("objective_relational").select_related('event_type', 'status').all()
 
 
 class TicketListCreateView(generics.ListCreateAPIView):
-    queryset = Ticket.objects.select_related('event', 'discount', 'ticket_type', 'order').all()
+    # queryset = Ticket.objects.select_related('event', 'discount', 'ticket_type', 'order').all()
     serializer_class = TicketSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        return Ticket.objects.using("objective_relational").select_related('event', 'ticket_type', 'order').all()
 
 class TicketDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Ticket.objects.select_related('event', 'discount', 'ticket_type', 'order').all()
+    # queryset = Ticket.objects.select_related('event', 'discount', 'ticket_type', 'order').all()
     serializer_class = TicketSerializer
-    lookup_field = 'id'
+    # lookup_field = 'id'
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        return Ticket.objects.using("objective_relational").select_related('event', 'discount', 'ticket_type', 'order').all()
 
 class OrderListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).prefetch_related(
+        return Order.objects.using("objective_relational").filter(user=self.request.user).prefetch_related(
             'tickets__event',
             'tickets__ticket_type',
             'tickets__discount'
@@ -149,10 +180,10 @@ class OrderListCreateView(generics.ListCreateAPIView):
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'id'
+    # lookup_field = 'id'
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).prefetch_related(
+        return Order.objects.using("objective_relational").filter(user=self.request.user).prefetch_related(
             'tickets__event',
             'tickets__ticket_type',
             'tickets__discount'
@@ -163,7 +194,7 @@ class NotificationListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user, is_read=False).order_by('-created_at')
+        return Notification.objects.using("objective_relational").filter(user=self.request.user, is_read=False).order_by('-created_at')
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -174,10 +205,10 @@ class NotificationListCreateView(generics.ListCreateAPIView):
 class NotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'id'
+    # lookup_field = 'id'
 
     def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user)
+        return Notification.objects.using("objective_relational").filter(user=self.request.user)
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -191,7 +222,7 @@ class MessageListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Message.objects.filter(user=self.request.user)
+        return Message.objects.using("objective_relational").filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -200,14 +231,14 @@ class MessageListCreateView(generics.ListCreateAPIView):
 class MessageDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'id'
+    # lookup_field = 'id'
 
     def get_queryset(self):
-        return Message.objects
+        return Message.objects.using("objective_relational")
 
 class MessageAllListView(generics.ListAPIView):
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Message.objects.all().order_by('-created_at')
+        return Message.objects.using("objective_relational").all()

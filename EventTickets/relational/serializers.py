@@ -101,27 +101,37 @@ class EventTypeSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.using("relational").all())
-
     class Meta:
         model = Message
-        fields = '__all__'
+        fields = ['id', 'text']
 
     def create(self, validated_data):
         return Message.objects.using("relational").create(**validated_data)
 
 
 
-class NotificationSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.using("relational").all())
+class NotificationCreateSerializer(serializers.ModelSerializer):
+    message_id = serializers.PrimaryKeyRelatedField(
+        queryset=Message.objects.using('relational').all(),
+        write_only=True
+    )
 
     class Meta:
         model = Notification
-        fields = '__all__'
+        fields = ['id', 'text', 'is_read', 'created_at', 'message_id']
+        read_only_fields = ['id', 'is_read', 'created_at']
 
     def create(self, validated_data):
-        return Notification.objects.using("relational").create(**validated_data)
+        message = validated_data.pop('message_id')
+        validated_data['user'] = message.user
+        return super().create(validated_data)
 
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('id', 'text', 'is_read', 'created_at')
+        read_only_fields = ('created_at',)
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -130,10 +140,14 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = "__all__"
+        fields = [ 'id', 'name', 'description', 'localization',
+            'date_start', 'date_end', 'created_at', 'updated_at',
+            'base_price', 'quantity',
+            'event_type', 'status']
 
     def create(self, validated_data):
         return Event.objects.using("relational").create(**validated_data)
+
 
 class TicketSerializer(serializers.ModelSerializer):
     event = serializers.PrimaryKeyRelatedField(queryset=Ticket.objects.using("relational").all())

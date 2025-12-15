@@ -39,14 +39,8 @@ class DiscountObjSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    event_type = EventTypeObjSerializer(read_only=True)
-    event_type_id = serializers.PrimaryKeyRelatedField(
-        queryset=EventTypeObj.objects.all(), source='event_type', write_only=True
-    )
-    status = StatusObjSerializer(read_only=True)
-    status_id = serializers.PrimaryKeyRelatedField(
-        queryset=StatusObj.objects.all(), source='status', write_only=True
-    )
+    event_type = serializers.PrimaryKeyRelatedField(queryset=EventTypeObj.objects.using("objective_relational").all())
+    status = serializers.PrimaryKeyRelatedField(queryset=StatusObj.objects.using("objective_relational").all())
 
     class Meta:
         model = Event
@@ -54,7 +48,7 @@ class EventSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'localization',
             'date_start', 'date_end', 'created_at', 'updated_at',
             'base_price', 'quantity',
-            'event_type', 'event_type_id', 'status', 'status_id'
+            'event_type', 'status'
         )
         read_only_fields = ('created_at', 'updated_at')
 
@@ -83,7 +77,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class NotificationCreateSerializer(serializers.ModelSerializer):
     message_id = serializers.PrimaryKeyRelatedField(
-        queryset=Message.objects.all(),
+        queryset=Message.objects.using('objective_relational').all(),
         write_only=True
     )
 
@@ -222,6 +216,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             event.save(update_fields=['quantity'])
 
         return order
+
 
 class OrderSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(source='user.id', read_only=True)

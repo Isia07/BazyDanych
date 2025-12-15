@@ -4,7 +4,7 @@ from .relational.views import RelRegisterView, RelLoginView, \
     RelStatusListCreateView, RelStatusDetailView, RelEventTypeListCreateView, RelEventTypeDetailView, \
     RelMessageListCreateView, RelMessageDetailView, RelNotificationListCreateView, RelNotificationDetailView, \
     RelEventListCreateView, RelEventDetailView, RelTicketListCreateView, RelTicketDetailView, RelOrderDetailView, \
-    RelOrderListCreateView
+    RelOrderListCreateView, RelMessageAllListView
 from .objective_relational.views import (
     RegisterView as ObjRelRegister, LoginView as ObjRelLogin,
     StatusObjListCreateView, StatusObjDetailView,
@@ -15,17 +15,17 @@ from .objective_relational.views import (
     EventListCreateView, EventDetailView,
     TicketListCreateView, TicketDetailView,
     OrderListCreateView, OrderDetailView,
-    NotificationListCreateView, NotificationDetailView, MessageAllListView,
+    NotificationListCreateView, NotificationDetailView, MessageAllListView
 )
 
 urlpatterns = [
     # register
-    path('api/v1/obj-rel/auth/register', ObjRelRegister.as_view(), name='obj_rel_register'),
-    path('api/v1/rel/auth/register', RelRegisterView.as_view(), name='rel_register'),
+    path('api/v1/obj-rel/auth/register/', ObjRelRegister.as_view(), name='obj_rel_register'),
+    path('api/v1/rel/auth/register/', RelRegisterView.as_view(), name='rel_register'),
 
     # login
-    path('api/v1/obj-rel/auth/login', ObjRelLogin.as_view(), name='obj_rel_login'),
-    path('api/v1/rel/auth/login', RelLoginView.as_view(), name='rel_login'),
+    path('api/v1/obj-rel/auth/login/', ObjRelLogin.as_view(), name='obj_rel_login'),
+    path('api/v1/rel/auth/login/', RelLoginView.as_view(), name='rel_login'),
 
     # discounts
     path('api/v1/obj-rel/discounts/', DiscountObjListCreateView.as_view(), name='obj_rel_discounts'),
@@ -65,6 +65,7 @@ urlpatterns = [
 
     #messages all
     path('api/v1/obj-rel/messages/all/', MessageAllListView.as_view(), name='obj_rel_messages_all'),
+    path('api/v1/rel/messages/all/', RelMessageAllListView.as_view(), name='obj_rel_messages_all'),
 
     # messages id
     path('api/v1/obj-rel/messages/<int:id>/', MessageDetailView.as_view(), name='obj_rel_message_detail'),
@@ -85,7 +86,7 @@ urlpatterns = [
     path('api/v1/rel/events/', RelEventListCreateView.as_view(), name="rel_events"),
 
     # events id
-    path('api/v1/obj-rel/events/<int:id>/', EventDetailView.as_view(), name='obj_rel_event_detail'),
+    path('api/v1/obj-rel/events/<int:pk>/', EventDetailView.as_view(), name='obj_rel_event_detail'),
     path('api/v1/rel/events/<int:pk>/', RelEventDetailView.as_view(), name="rel_event_detail"),
 
     # tickets

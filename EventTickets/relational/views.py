@@ -1,15 +1,17 @@
 from rest_framework.response import Response
 
 from EventTickets.shared.views import BaseRegisterView, BaseLoginView
-from rest_framework import status, generics
+from rest_framework import status, generics, permissions
 from .models import Discount, TicketType, Status, EventType, Message, Notification, Event, Ticket, Order
 from .serializers import DiscountSerializer, TicketTypeSerializer, StatusSerializer, EventTypeSerializer, \
-    MessageSerializer, NotificationSerializer, EventSerializer, TicketSerializer, OrderSerializer, OrderCreateSerializer
+    MessageSerializer, NotificationSerializer, EventSerializer, TicketSerializer, OrderSerializer, \
+    OrderCreateSerializer, NotificationCreateSerializer
 from ..objective_relational.serializers import TicketSerializer
 
 
 class RelRegisterView(BaseRegisterView):
     database = 'relational'
+
 
 class RelLoginView(BaseLoginView):
     database = 'relational'
@@ -17,6 +19,7 @@ class RelLoginView(BaseLoginView):
 
 class RelDiscountListCreateView(generics.ListCreateAPIView):
     serializer_class = DiscountSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Discount.objects.using("relational").all()
@@ -27,6 +30,7 @@ class RelDiscountListCreateView(generics.ListCreateAPIView):
 
 class RelDiscountDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DiscountSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Discount.objects.using("relational").all()
@@ -38,9 +42,9 @@ class RelDiscountDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete(using="relational")
 
 
-
 class RelTicketTypeListCreateView(generics.ListCreateAPIView):
     serializer_class = TicketTypeSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return TicketType.objects.using("relational").all()
@@ -51,6 +55,7 @@ class RelTicketTypeListCreateView(generics.ListCreateAPIView):
 
 class RelTicketTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TicketTypeSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return TicketType.objects.using("relational").all()
@@ -62,9 +67,9 @@ class RelTicketTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete(using="relational")
 
 
-
 class RelStatusListCreateView(generics.ListCreateAPIView):
     serializer_class = StatusSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Status.objects.using("relational").all()
@@ -75,6 +80,7 @@ class RelStatusListCreateView(generics.ListCreateAPIView):
 
 class RelStatusDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = StatusSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Status.objects.using("relational").all()
@@ -86,9 +92,9 @@ class RelStatusDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete(using="relational")
 
 
-
 class RelEventTypeListCreateView(generics.ListCreateAPIView):
     serializer_class = EventTypeSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return EventType.objects.using("relational").all()
@@ -99,6 +105,7 @@ class RelEventTypeListCreateView(generics.ListCreateAPIView):
 
 class RelEventTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EventTypeSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return EventType.objects.using("relational").all()
@@ -110,12 +117,12 @@ class RelEventTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete(using="relational")
 
 
-
 class RelMessageListCreateView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return Message.objects.using("relational").filter(user=self.request.user).order_by('-created_at')
+        return Message.objects.using("relational").filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -123,6 +130,7 @@ class RelMessageListCreateView(generics.ListCreateAPIView):
 
 class RelMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MessageSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Message.objects.using("relational").filter(user=self.request.user)
@@ -134,19 +142,21 @@ class RelMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete(using="relational")
 
 
-
 class RelNotificationListCreateView(generics.ListCreateAPIView):
-    serializer_class = NotificationSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return Notification.objects.using("relational").filter(user=self.request.user).order_by('-created_at')
+        return Notification.objects.using("relational").filter(user=self.request.user, is_read=False).order_by('-created_at')
 
-    def perform_create(self, serializer):
-        serializer.save()
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return NotificationCreateSerializer
+        return NotificationSerializer
 
 
 class RelNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Notification.objects.using("relational").filter(user=self.request.user)
@@ -164,9 +174,9 @@ class RelNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete(using="relational")
 
 
-
 class RelEventListCreateView(generics.ListCreateAPIView):
     serializer_class = EventSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Event.objects.select_related('event_type', 'status').using("relational").all()
@@ -177,6 +187,7 @@ class RelEventListCreateView(generics.ListCreateAPIView):
 
 class RelEventDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EventSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Event.objects.using("relational").select_related('event_type', 'status').all()
@@ -188,9 +199,9 @@ class RelEventDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete(using="relational")
 
 
-
 class RelTicketListCreateView(generics.ListCreateAPIView):
     serializer_class = TicketSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Ticket.objects.using("relational").select_related('event', 'ticket_type', 'order').all()
@@ -201,6 +212,7 @@ class RelTicketListCreateView(generics.ListCreateAPIView):
 
 class RelTicketDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TicketSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Ticket.objects.using("relational").select_related('event', 'discount', 'ticket_type', 'order').all()
@@ -212,8 +224,8 @@ class RelTicketDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete(using="relational")
 
 
-
 class RelOrderListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.AllowAny]
     def get_queryset(self):
         return Order.objects.using("relational").filter(user=self.request.user).prefetch_related(
             'tickets__event',
@@ -231,6 +243,7 @@ class RelOrderListCreateView(generics.ListCreateAPIView):
 
 
 class RelOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.AllowAny]
     serializer_class = OrderSerializer
 
     def get_queryset(self):
@@ -240,13 +253,9 @@ class RelOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
             'tickets__discount'
         )
 
+class RelMessageAllListView(generics.ListAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-
-
-
-
-
-
-
-
-
+    def get_queryset(self):
+        return Message.objects.using("relational").all()
