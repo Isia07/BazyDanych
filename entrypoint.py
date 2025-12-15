@@ -34,6 +34,10 @@ if __name__ == "__main__":
     wait_for_db("objective_relational")
     wait_for_db("objective")
 
+    print("Running migrations on user...")
+    os.system("python manage.py migrate shared --database=objective_relational")
+    os.system("python manage.py migrate shared --database=relational")
+
     print("Running migrations...")
     os.system(
         "python manage.py migrate objective_relational --database=objective_relational"

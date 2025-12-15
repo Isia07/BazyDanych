@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -6,6 +9,10 @@ User = get_user_model()
 class Status(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        db_table = "status"
+        app_label = "relational"
 
     def __str__(self):
         return self.name
@@ -16,6 +23,10 @@ class EventType(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
 
+    class Meta:
+        db_table = "eventtype"
+        app_label = "relational"
+
     def __str__(self):
         return self.name
 
@@ -24,15 +35,14 @@ class EventType(models.Model):
 class TicketType(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
+    discount = models.DecimalField(max_digits=5, decimal_places=4, default=0, validators=[
+        MinValueValidator(Decimal('0.0000')),
+        MaxValueValidator(Decimal('1.0000')),
+    ])
 
-    def __str__(self):
-        return self.name
-
-
-
-class SeatType(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, unique=True)
+    class Meta:
+        db_table = "tickettype"
+        app_label = "relational"
 
     def __str__(self):
         return self.name
@@ -66,22 +76,15 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.ForeignKey(Status, on_delete=models.PROTECT)
+    base_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField()
+
+    class Meta:
+        db_table = "revent"
+        app_label = "relational"
 
     def __str__(self):
         return self.name
-
-
-
-class Ticket(models.Model):
-    id = models.AutoField(primary_key=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    quantity = models.IntegerField()
-    is_active = models.BooleanField(default=True)
-
 
 
 class Order(models.Model):
@@ -89,18 +92,25 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     purchase_date = models.DateTimeField(auto_now_add=True)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
+    discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        db_table = "rorder"
+        app_label = "relational"
 
 
-
-class OrderTickets(models.Model):
+class Ticket(models.Model):
     id = models.AutoField(primary_key=True)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
-    ticket_types = models.ForeignKey(TicketType, on_delete=models.PROTECT)
-    seat_type = models.ForeignKey(SeatType, on_delete=models.PROTECT)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='tickets')
+    ticket_type = models.ForeignKey(TicketType, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     quantity = models.PositiveIntegerField()
-    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
-    subtotal = models.DecimalField(max_digits=12, decimal_places=2)
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets')
+
+    class Meta:
+        db_table = "rticket"
+        app_label = "relational"
 
 
 
@@ -111,6 +121,10 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "rnotification"
+        app_label = "relational"
+
 
 
 class Message(models.Model):
@@ -118,5 +132,9 @@ class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "rmessage"
+        app_label = "relational"
 
 

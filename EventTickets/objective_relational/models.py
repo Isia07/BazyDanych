@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -9,6 +12,7 @@ class TypeObj(models.Model):
 
     class Meta:
         abstract = True
+        db_table = "type_obj"
         app_label = "objective_relational"
 
     def __str__(self):
@@ -28,14 +32,18 @@ class EventTypeObj(TypeObj):
 
 
 class TicketTypeObj(TypeObj):
+    discount = models.DecimalField(
+        max_digits=5,
+        decimal_places=4,
+        default=0.0000,
+        validators=[
+            MinValueValidator(Decimal('0.0000')),
+            MaxValueValidator(Decimal('1.0000'))
+        ],
+    ) # between 0 - 1
+
     class Meta:
         db_table = "ticket_type_obj"
-        app_label = "objective_relational"
-
-
-class SeatTypeObj(TypeObj):
-    class Meta:
-        db_table = "seat_type_obj"
         app_label = "objective_relational"
 
 
@@ -60,6 +68,8 @@ class Event(models.Model):
     date_end = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    base_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField()
 
     class Meta:
         db_table = "event"
@@ -70,13 +80,13 @@ class Event(models.Model):
 
 
 class Ticket(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    discount = models.ForeignKey(
-        DiscountObj, on_delete=models.SET_NULL, null=True, blank=True
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='tickets')
+    ticket_type = models.ForeignKey(TicketTypeObj, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField(default=1)
+    order = models.ForeignKey(
+        'Order', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='tickets'
     )
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.PositiveIntegerField()
-    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -89,23 +99,12 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="obj_rel_orders")
     purchase_date = models.DateTimeField(auto_now_add=True)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
+    discount = models.ForeignKey(
+        DiscountObj, on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     class Meta:
         db_table = "order"
-        app_label = "objective_relational"
-
-
-class OrderTicket(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
-    ticket_types = models.ForeignKey(TicketTypeObj, on_delete=models.PROTECT)
-    seat_type = models.ForeignKey(SeatTypeObj, on_delete=models.PROTECT)
-    quantity = models.PositiveIntegerField()
-    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
-    subtotal = models.DecimalField(max_digits=12, decimal_places=2)
-
-    class Meta:
-        db_table = "order_ticket"
         app_label = "objective_relational"
 
 
@@ -121,7 +120,7 @@ class Notification(models.Model):
 
 
 class Message(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="obj_rel_Messages")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="obj_rel_messages")
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
