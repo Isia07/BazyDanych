@@ -1,106 +1,93 @@
 from rest_framework import serializers
-from bson import ObjectId
 
-from .mongo_client import (
-    discounts_collection,
-    event_types_collection,
-    seat_types_collection,
-    ticket_types_collection,
-    statuses_collection,
-    events_collection,
-)
-
-
-class NosqlDiscountSerializer(serializers.Serializer):
+class StatusObjSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    discount_percentage = serializers.FloatField()
-    code = serializers.CharField(max_length=50)
+    name = serializers.CharField(max_length=255)
+
+class EventTypeObjSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    name = serializers.CharField(max_length=255)
+
+class TicketTypeObjSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    name = serializers.CharField(max_length=255)
+    discount = serializers.DecimalField(max_digits=8, decimal_places=4)
+
+class DiscountObjSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    name = serializers.CharField(max_length=255)
+    discount_percentage = serializers.DecimalField(max_digits=8, decimal_places=2)
+    code = serializers.CharField(max_length=80)
     valid_from = serializers.DateTimeField()
     valid_to = serializers.DateTimeField()
 
-    def to_representation(self, instance):
-        if isinstance(instance, dict):
-            data = instance.copy()
-            if "_id" in data:
-                data["id"] = str(data.pop("_id"))
-            return data
-        return super().to_representation(instance)
-
-    def validate_code(self, value):
-        existing = discounts_collection.find_one({"code": value})
-        if existing:
-            raise serializers.ValidationError(
-                "Kod rabatowy o podanej wartości już istnieje."
-            )
-        return value
-
-    def create(self, validated_data):
-        result = discounts_collection.insert_one(validated_data)
-        validated_data["id"] = float(validated_data["discount_percentage"])
-        return validated_data
-
-class NosqlEventTypeSerializer(serializers.Serializer):
-    id = serializers.CharField(read_only=True)
-    name = serializers.CharField(max_length=255)
-
-    def create(self, validated_data):
-        result = event_types_collection.insert_one(validated_data)
-        validated_data["id"] = str(result.inserted_id)
-        return validated_data
-
-
-class NosqlSeatTypeSerializer(serializers.Serializer):
-    id = serializers.CharField(read_only=True)
-    name = serializers.CharField(max_length=255)
-
-    def create(self, validated_data):
-        result = seat_types_collection.insert_one(validated_data)
-        validated_data["id"] = str(result.inserted_id)
-        return validated_data
-
-
-class NosqlTicketTypeSerializer(serializers.Serializer):
-    id = serializers.CharField(read_only=True)
-    name = serializers.CharField(max_length=255)
-
-    def create(self, validated_data):
-        result = ticket_types_collection.insert_one(validated_data)
-        validated_data["id"] = str(result.inserted_id)
-        return validated_data
-
-
-class NosqlStatusSerializer(serializers.Serializer):
-    id = serializers.CharField(read_only=True)
-    name = serializers.CharField(max_length=255)
-
-    def create(self, validated_data):
-        result = statuses_collection.insert_one(validated_data)
-        validated_data["id"] = str(result.inserted_id)
-        return validated_data
-    
-class NosqlEventSerializer(serializers.Serializer):
+class EventSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     name = serializers.CharField(max_length=255)
     description = serializers.CharField()
     localization = serializers.CharField()
-    event_type = serializers.CharField(max_length=255)
-    status = serializers.CharField(max_length=255)
     date_start = serializers.DateTimeField()
     date_end = serializers.DateTimeField()
+    created_at = serializers.DateTimeField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
+    base_price = serializers.DecimalField(max_digits=12, decimal_places=2)
+    quantity = serializers.IntegerField(min_value=0)
 
-    tickets = serializers.ListField(
-        child=serializers.DictField(),
-        required=False
-    )
+    event_type = EventTypeObjSerializer(read_only=True)
+    event_type_id = serializers.CharField(write_only=True)
 
-    def create(self, validated_data):
-        from datetime import datetime
+    status = StatusObjSerializer(read_only=True)
+    status_id = serializers.CharField(write_only=True)
 
-        now = datetime.utcnow()
-        validated_data.setdefault("tickets", [])
-        validated_data["created_at"] = now
-        validated_data["updated_at"] = now
+class TicketSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
 
-        result = events_collection.insert_one(validated_data)
-        validated_data["id"] = str(result.inserted_id)
-        return validated_data
+    event = serializers.CharField(write_only=True)
+    event_detail = EventSerializer(read_only=True)
+
+    ticket_type = TicketTypeObjSerializer(read_only=True)
+    ticket_type_id = serializers.CharField(write_only=True)
+
+    quantity = serializers.IntegerField(min_value=1)
+    order_id = serializers.CharField(read_only=True, allow_null=True)
+
+    created_at = serializers.DateTimeField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
+
+class TicketCreateSerializer(serializers.Serializer):
+    event = serializers.CharField()
+    ticket_type = serializers.CharField()
+    quantity = serializers.IntegerField(min_value=1)
+
+class OrderCreateSerializer(serializers.Serializer):
+    tickets = TicketCreateSerializer(many=True, write_only=True)
+    discount = serializers.CharField(required=False, allow_null=True, write_only=True)
+    total_price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+
+class OrderSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    user_id = serializers.IntegerField(read_only=True)
+    purchase_date = serializers.DateTimeField(read_only=True)
+    total_price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+
+    tickets = TicketSerializer(many=True, read_only=True)
+    discount = DiscountObjSerializer(read_only=True)
+    discount_id = serializers.CharField(write_only=True, required=False, allow_null=True)
+
+class MessageSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    text = serializers.CharField()
+    created_at = serializers.DateTimeField(read_only=True)
+
+class NotificationSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    text = serializers.CharField()
+    is_read = serializers.BooleanField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+
+class NotificationCreateSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    text = serializers.CharField()
+    is_read = serializers.BooleanField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    message_id = serializers.CharField(write_only=True)

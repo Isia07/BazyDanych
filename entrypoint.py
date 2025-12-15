@@ -6,6 +6,7 @@ from django.db import connections
 from django.db.utils import OperationalError
 
 
+
 def wait_for_db(alias):
     print(f"Waiting for database '{alias}' to be ready...")
     attempts = 0

@@ -8,7 +8,7 @@ services:
       - DB_OBJ_REL_URL=postgres://postgres:postgres@db_obj_rel:5432/db_obj_rel
       - DB_OBJECT_URL=postgres://obj_user:obj_haslo@db_object:5432/db_object
       - DB_RELATIONAL_URL=postgres://postgres:postgres@db_relational:5432/db_relational
-      # - DB_NOSQL_URL=mongodb://nosql_user:nosql_haslo@db_nosql:27017/db_nosql
+      - DB_NOSQL_URL=mongodb://nosql_user:nosql_haslo@db_nosql:27017/db_nosql
 
       - DJANGO_SECRET_KEY=super-long-random-secret-key-1234567890
       - DEBUG=True
@@ -19,9 +19,9 @@ services:
         condition: service_healthy
       db_relational:
         condition: service_healthy
-      # db_nosql:
-      #   condition: service_started
-    command: venv/bin/python manage.py runserver 0.0.0.0:8000
+      db_nosql:
+        condition: service_started
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
 
@@ -68,19 +68,21 @@ services:
       test: ["CMD", "pg_isready", "-U", "postgres"]
 
   # ──────────────────────── NoSQL ────────────────────────
-  # db_nosql:
-  #   image: mongo:7-jammy
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=nosql_user
-  #     - MONGO_INITDB_ROOT_PASSWORD=nosql_tajne789
-  #     - MONGO_INITDB_DATABASE=db_nosql
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongodata:/data/db
+  db_nosql:
+    image: mongo:7-jammy
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nosql_user
+      - MONGO_INITDB_ROOT_PASSWORD=nosql_tajne789
+      - MONGO_INITDB_DATABASE=db_nosql
+      - DB_NOSQL_URL=mongodb://nosql_user:nosql_tajne789@db_nosql:27017/db_nosql?authSource=admin
+
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
 
 volumes:
   pgdata_obj_rel:
   pgdata_object:
   pgdata_relational:
-  # mongodata:
+  mongodata:

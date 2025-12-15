@@ -87,11 +87,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 nosql_database = {
-        'ENGINE': 'django_mongodb_backend',
-        'NAME': 'ticket_system_nosql',
-        'HOST': 'localhost',
+        'NAME': 'db_nosql',
+        'HOST': 'db_nosql',
         'PORT': 27017,
-    }
+        'USER': 'nosql_user',
+        'PASSWORD': 'nosql_tajne789',
+        'AUTH_SOURCE': 'admin',
+}
+
 
 obj_rel_database = {
     "ENGINE": "django.db.backends.postgresql",
