@@ -43,4 +43,29 @@ urlpatterns = [
     path('api/v1/obj-rel/notifications/<int:pk>/read', UserNotificationListView.as_view(), name='obj_rel_notification_read'),
     path('api/v1/obj-rel/messages', UserMessageListCreateView.as_view(), name='obj_rel_messages'),
 
+    path('api/v1/obj/auth/register', ObjRelRegister.as_view(), name='obj_register'),
+    path('api/v1/obj/auth/login', ObjRelLogin.as_view(), name='obj_login'),
+
+    path('api/v1/obj/discounts/', DiscountObjListCreateView.as_view(), name='obj_discounts'),
+    path("api/v1/obj/discounts/<int:id>/", DiscountObjDetailView.as_view(), name="obj_discounts_id"),
+    path('api/v1/obj/event-types/', EventTypeObjListCreateView.as_view(), name='obj_event_types'),
+    path('api/v1/obj/event-types/<int:id>/', EventTypeObjDetailView.as_view(), name='obj_event_types_id'),
+    path('api/v1/obj/seat-types/', SeatTypeObjListCreateView.as_view(), name='obj_seat_types'),
+    path('api/v1/obj/seat-types/<int:id>/', SeatTypeObjDetailView.as_view(), name='obj_seat_types_id'),
+    path('api/v1/obj/statuses/', StatusObjListCreateView.as_view(), name='obj_statuses'),
+    path('api/v1/obj/statuses/<int:id>/', StatusObjDetailView.as_view(), name='obj_statuses_id'),
+    path('api/v1/obj/ticket-types/', TicketTypeObjListCreateView.as_view(), name='obj_ticket_types'),
+    path('api/v1/obj/ticket-types/<int:id>/', TicketTypeObjDetailView.as_view(), name='obj_ticket_types_id'),
+
+    path('api/v1/obj/events', EventListCreateView.as_view(), name='obj_event_list_create'),
+    path('api/v1/obj/events/<int:pk>', EventDetailView.as_view(), name='obj_event_detail'),
+
+    path('api/v1/obj/tickets', TicketListCreateView.as_view(), name='obj_ticket_list_create'),
+
+    path('api/v1/obj/orders', UserOrderListView.as_view(), name='obj_user_orders'),
+    path('api/v1/obj/orders/create', OrderCreateView.as_view(), name='obj_order_create'),
+
+    path('api/v1/obj/notifications', UserNotificationListView.as_view(), name='obj_notifications'),
+    path('api/v1/obj/notifications/<int:pk>/read', UserNotificationListView.as_view(), name='obj_notification_read'),
+    path('api/v1/obj/messages', UserMessageListCreateView.as_view(), name='obj_messages'),
 ]
