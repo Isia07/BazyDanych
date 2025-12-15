@@ -193,7 +193,7 @@ class RelTicketListCreateView(generics.ListCreateAPIView):
     serializer_class = TicketSerializer
 
     def get_queryset(self):
-        return Ticket.objects.using("relational").select_related('event', 'discount', 'ticket_type', 'order').all()
+        return Ticket.objects.using("relational").select_related('event', 'ticket_type', 'order').all()
 
     def perform_create(self, serializer):
         serializer.save()
