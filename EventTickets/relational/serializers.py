@@ -12,9 +12,9 @@ class DiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Discount
         fields = '__all__'
-        extra_kwargs = {
-            'code': {'validators': []},
-        }
+        # extra_kwargs = {
+        #     'code': {'validators': []},
+        # }
 
     def validate_code(self, value):
         instance = getattr(self, 'instance', None)
