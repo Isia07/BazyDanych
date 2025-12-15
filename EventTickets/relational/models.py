@@ -51,6 +51,7 @@ class TicketType(models.Model):
 
 class Discount(models.Model):
     id = models.AutoField(primary_key=True)
+    name = models.TextField(default='')
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     code = models.CharField(max_length=50, unique=True)
     valid_from = models.DateTimeField()
