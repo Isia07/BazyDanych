@@ -13,7 +13,7 @@ from EventTickets.nosql.views import (
     NosqlMessageListCreateView, NosqlMessageDetailView, NosqlMessageAllListView,
 )
 
-#from EventTickets.nosql.views_auth import NosqlRegisterView, NosqlLoginView
+
 
 
 from .objective.views import (
