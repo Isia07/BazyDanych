@@ -123,8 +123,9 @@ objective_database = {
     "HOST": "db_object",
     "PORT": "5432",
 }
+
 DATABASES = {
-    "default": objective_database,  # To create superuser set your database here
+    "default": nosql_database,  # To create superuser set your database here
     "objective_relational": obj_rel_database,
     "relational": relational_database,
     "objective": objective_database,
