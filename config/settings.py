@@ -18,7 +18,6 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -85,6 +84,18 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+nosql_database = {
+        'ENGINE': 'django_mongodb_backend',
+        'NAME': 'db_nosql',
+        'HOST': 'db_nosql',
+        'PORT': 27017,
+        'USER': 'nosql_user',
+        'PASSWORD': 'nosql_haslo',
+        #'AUTH_SOURCE': 'db_nosql',
+}
+
+
 obj_rel_database = {
     "ENGINE": "django.db.backends.postgresql",
     "NAME": "db_obj_rel",
@@ -103,6 +114,7 @@ relational_database = {
     "PORT": "5432",
 }
 
+
 objective_database = {
     "ENGINE": "django.db.backends.postgresql",
     "NAME": "db_object",
@@ -112,21 +124,12 @@ objective_database = {
     "PORT": "5432",
 }
 
-# nosql_database = {
-#     'ENGINE': 'django_mongodb_backend',
-#     'NAME': 'db_nosql',
-#     'USER': '',
-#     'PASSWORD': '',
-#     'HOST': 'db_nosql',
-#     'PORT': '27017',
-# }
-
 DATABASES = {
-    "default": objective_database,  # To create superuser set your database here
+    "default": nosql_database,  # To create superuser set your database here
     "objective_relational": obj_rel_database,
     "relational": relational_database,
     "objective": objective_database,
-    # 'nosql': nosql_database,
+    'nosql': nosql_database,
 }
 
 # Password validation
@@ -170,6 +173,10 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "shared.User"
+
+NOSQL_JWT_SECRET = os.getenv("NOSQL_JWT_SECRET", "dev-nosql-secret-change-me")
+NOSQL_JWT_ALG = "HS256"
+NOSQL_JWT_EXP_SECONDS = 60 * 60 * 24
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
