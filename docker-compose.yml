@@ -8,7 +8,7 @@ services:
       - DB_OBJ_REL_URL=postgres://postgres:postgres@db_obj_rel:5432/db_obj_rel
       - DB_OBJECT_URL=postgres://obj_user:obj_haslo@db_object:5432/db_object
       - DB_RELATIONAL_URL=postgres://postgres:postgres@db_relational:5432/db_relational
-      - DB_NOSQL_URL=mongodb://nosql_user:nosql_haslo@db_nosql:27017/db_nosql
+      - DB_NOSQL_URL=mongodb://nosql_user:nosql_haslo@db_nosql:27017/
 
       - DJANGO_SECRET_KEY=super-long-random-secret-key-1234567890
       - DEBUG=True
@@ -72,10 +72,9 @@ services:
     image: mongo:7-jammy
     environment:
       - MONGO_INITDB_ROOT_USERNAME=nosql_user
-      - MONGO_INITDB_ROOT_PASSWORD=nosql_tajne789
+      - MONGO_INITDB_ROOT_PASSWORD=nosql_haslo
       - MONGO_INITDB_DATABASE=db_nosql
-      - DB_NOSQL_URL=mongodb://nosql_user:nosql_tajne789@db_nosql:27017/db_nosql?authSource=admin
-
+      - DB_NOSQL_URL=mongodb://nosql_user:nosql_haslo@db_nosql:27017/
     ports:
       - "27017:27017"
     volumes:

@@ -66,7 +66,7 @@ class OrderCreateSerializer(serializers.Serializer):
 
 class OrderSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    user_id = serializers.IntegerField(read_only=True)
+    user_id = serializers.CharField(read_only=True)
     purchase_date = serializers.DateTimeField(read_only=True)
     total_price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
 

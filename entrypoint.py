@@ -4,8 +4,8 @@ import time
 
 from django.db import connections
 from django.db.utils import OperationalError
-
-
+from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 
 def wait_for_db(alias):
     print(f"Waiting for database '{alias}' to be ready...")
@@ -21,6 +21,36 @@ def wait_for_db(alias):
             time.sleep(2)
     raise Exception(f"Database '{alias}' did not become ready")
 
+def wait_for_mongo(attempts_max=30, sleep_s=2):
+    print("Waiting for MongoDB to be ready...")
+    attempts = 0
+
+    mongo_url = os.getenv("DB_NOSQL_URL")
+    if not mongo_url:
+        # fallback: z settings albo ręcznie z env
+        host = os.getenv("DB_NOSQL_HOST", "db_nosql")
+        port = int(os.getenv("DB_NOSQL_PORT", "27017"))
+        user = os.getenv("DB_NOSQL_USER")
+        password = os.getenv("DB_NOSQL_PASSWORD")
+        #auth_source = os.getenv("DB_NOSQL_AUTH_SOURCE", "db_nosql")
+
+        if user and password:
+            mongo_url = f"mongodb://{user}:{password}@{host}:{port}/" #?authSource={auth_source}
+        else:
+            mongo_url = f"mongodb://{host}:{port}"
+
+    while attempts < attempts_max:
+        try:
+            client = MongoClient(mongo_url, serverSelectionTimeoutMS=2000)
+            client.admin.command("ping")
+            print("MongoDB is ready!")
+            return
+        except PyMongoError as e:
+            attempts += 1
+            print(f"  Attempt {attempts}/{attempts_max}... ({type(e).__name__})")
+            time.sleep(sleep_s)
+
+    raise Exception("MongoDB did not become ready")
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -30,10 +60,10 @@ if __name__ == "__main__":
     django.setup()
 
     print("Waiting for databases...")
-    wait_for_db("default")
-    wait_for_db("relational")
     wait_for_db("objective_relational")
+    wait_for_db("relational")
     wait_for_db("objective")
+    wait_for_mongo()
 
     print("Running migrations on user...")
     os.system("python manage.py migrate shared --database=objective_relational")
