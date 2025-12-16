@@ -1,16 +1,56 @@
 from django.urls import path
 
-from .objective.views import DiscountsDetailView as ObjDiscountsDetailView
-from .objective.views import DiscountsListCreateView as ObjDiscountsListCreateView
-from .objective.views import EventDetailView as ObjEventDetailView
-from .objective.views import EventListCreateView as ObjEventListCreateView
-from .objective.views import LoginView as ObjLogin
-from .objective.views import OrderCreateView as ObjOrderCreateView
-from .objective.views import RegisterView as ObjRegister
-from .objective.views import TicketListCreateView as ObjTicketListCreateView
-from .objective.views import UserMessageListCreateView as ObjUserMessageListCreateView
-from .objective.views import UserNotificationListView as ObjUserNotificationListView
-from .objective.views import UserOrderListView as ObjUserOrderListView
+from .objective.views import (
+    DiscountsDetailView as ObjDiscountsDetailView,
+)
+from .objective.views import (
+    DiscountsListCreateView as ObjDiscountsListCreateView,
+)
+from .objective.views import (
+    EventDetailView as ObjEventDetailView,
+)
+from .objective.views import (
+    EventListCreateView as ObjEventListCreateView,
+)
+from .objective.views import (
+    EventTypeDetailView as ObjEventTypeDetailView,
+)
+from .objective.views import (
+    EventTypeListCreateView as ObjEventTypeListCreateView,
+)
+from .objective.views import (
+    LoginView as ObjLogin,
+)
+from .objective.views import (
+    OrderCreateView as ObjOrderCreateView,
+)
+from .objective.views import (
+    RegisterView as ObjRegister,
+)
+from .objective.views import (
+    StatusDetailView as ObjStatusDetailView,
+)
+from .objective.views import (
+    StatusListCreateView as ObjStatusListCreateView,
+)
+from .objective.views import (
+    TicketListCreateView as ObjTicketListCreateView,
+)
+from .objective.views import (
+    TicketTypeDetailView as ObjTicketTypeDetailView,
+)
+from .objective.views import (
+    TicketTypeListCreateView as ObjTicketTypeListCreateView,
+)
+from .objective.views import (
+    UserMessageListCreateView as ObjUserMessageListCreateView,
+)
+from .objective.views import (
+    UserNotificationListView as ObjUserNotificationListView,
+)
+from .objective.views import (
+    UserOrderListView as ObjUserOrderListView,
+)
 from .objective_relational.views import (
     DiscountObjDetailView,
     DiscountObjListCreateView,
@@ -306,5 +346,43 @@ urlpatterns = [
         "api/v1/obj/messages/",
         ObjUserMessageListCreateView.as_view(),
         name="obj_messages",
+    ),
+    path(
+        "api/v1/obj/statuses/", ObjStatusListCreateView.as_view(), name="obj_statuses"
+    ),
+    path(
+        "api/v1/obj/statuses/<int:pk>/",
+        ObjStatusDetailView.as_view(),
+        name="obj_statuses_id",
+    ),
+    path(
+        "api/v1/obj/event-types/",
+        ObjEventTypeListCreateView.as_view(),
+        name="obj_event_types",
+    ),
+    path(
+        "api/v1/obj/event-types/<int:pk>/",
+        ObjEventTypeDetailView.as_view(),
+        name="obj_event_types_id",
+    ),
+    path(
+        "api/v1/obj/ticket-types/",
+        ObjTicketTypeListCreateView.as_view(),
+        name="obj_ticket_types",
+    ),
+    path(
+        "api/v1/obj/ticket-types/<int:pk>/",
+        ObjTicketTypeDetailView.as_view(),
+        name="obj_ticket_types_id",
+    ),
+    path(
+        "api/v1/obj/messages/",
+        ObjUserMessageListCreateView.as_view(),
+        name="obj_messages",
+    ),
+    path(
+        "api/v1/obj/messages/all/",
+        ObjUserMessageListCreateView.as_view(),
+        name="obj_messages_all",
     ),
 ]
