@@ -40,20 +40,7 @@ from django.conf import settings
 from .mongo_client import users_collection
 
 
-# def issue_token(user_oid: ObjectId) -> str:
-#     key = secrets.token_urlsafe(32)
-#     tokens_collection.insert_one({
-#         "key": key,
-#         "user_id": user_oid,  # ObjectId
-#         "created_at": datetime.now(timezone.utc),
-#     })
-#     return key
-
-
 def issue_token(user_oid: ObjectId) -> str:
-    """
-    Tworzy token w Mongo w kolekcji 'tokens' i zwraca jego klucz (string).
-    """
     key = secrets.token_hex(20)  # 40 znaków hex
     tokens_collection.insert_one({
         "_id": key,                 # klucz tokena jako _id (łatwe wyszukiwanie)
@@ -65,7 +52,7 @@ def issue_token(user_oid: ObjectId) -> str:
 
 class NosqlRegisterView(APIView):
     permission_classes = [permissions.AllowAny]
-    authentication_classes = []  # ważne: bez auth
+    authentication_classes = [] 
 
     def post(self, request):
         email = (request.data.get("email") or "").strip().lower()
@@ -97,35 +84,6 @@ class NosqlRegisterView(APIView):
         )
 
 
-# class NosqlRegisterView(APIView):
-#     permission_classes = [permissions.AllowAny]
-#     authentication_classes = []  # bardzo ważne: żadnego token-auth tu
-
-#     def post(self, request):
-#         email = (request.data.get("email") or "").strip().lower()
-#         password = request.data.get("password") or ""
-
-#         if not email or not password:
-#             return Response({"success": False, "error": "email and password required"}, status=400)
-
-#         if users_collection.find_one({"email": email}):
-#             return Response({"success": False, "error": "This email is already taken"}, status=400)
-
-#         pw_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-#         doc = {
-#             "email": email,
-#             "password_hash": pw_hash,
-#             "name": "",
-#             "surname": "",
-#             "is_active": True,
-#             "created_at": datetime.now(timezone.utc),
-#             "updated_at": datetime.now(timezone.utc),
-#         }
-#         _id = users_collection.insert_one(doc).inserted_id
-#         token = issue_token(str(_id))
-
-#         return Response({"success": True, "token": token, "user": {"id": str(_id), "email": email}}, status=201)
-
 
 class NosqlLoginView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -149,27 +107,6 @@ class NosqlLoginView(APIView):
 
         return Response({"token": token, "user": {"id": str(doc["_id"]), "email": email}}, status=200)
 
-
-# class NosqlLoginView(APIView):
-#     permission_classes = [permissions.AllowAny]
-#     authentication_classes = []
-
-#     def post(self, request):
-#         email = (request.data.get("email") or "").strip().lower()
-#         password = request.data.get("password") or ""
-
-#         doc = users_collection.find_one({"email": email})
-#         if not doc:
-#             return Response({"success": False, "error": "No account found with this email"}, status=400)
-
-#         if not doc.get("is_active", True):
-#             return Response({"success": False, "error": "This account has been deactivated"}, status=400)
-
-#         if not bcrypt.checkpw(password.encode("utf-8"), doc["password_hash"].encode("utf-8")):
-#             return Response({"success": False, "error": "Incorrect password"}, status=400)
-
-#         token = issue_token(str(doc["_id"]))
-#         return Response({"token": token, "user": {"id": str(doc["_id"]), "email": email}}, status=200)
 
 
 
@@ -506,7 +443,7 @@ class NosqlEventDetailView(APIView):
                 "base_price": float(v["base_price"]),
                 "quantity": int(v["quantity"]),
                 "event_type_id": oid(v["event_type_id"]),
-                "status_id": oid(v["status_id"]),  # <-- FIX
+                "status_id": oid(v["status_id"]),
             }}
         ).matched_count
 

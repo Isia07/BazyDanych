@@ -34,10 +34,24 @@ class EventSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=0)
 
     event_type = EventTypeObjSerializer(read_only=True)
-    event_type_id = serializers.CharField(write_only=True)
-
     status = StatusObjSerializer(read_only=True)
+
+    event_type_id = serializers.CharField(write_only=True)
     status_id = serializers.CharField(write_only=True)
+
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            d = dict(data)
+
+            if "event_type_id" not in d and "event_type" in d:
+                d["event_type_id"] = d.get("event_type")
+
+            if "status_id" not in d and "status" in d:
+                d["status_id"] = d.get("status")
+
+            return super().to_internal_value(d)
+
+        return super().to_internal_value(data)
 
 class TicketSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)

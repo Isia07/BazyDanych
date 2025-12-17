@@ -156,7 +156,7 @@ urlpatterns = [
     path('api/v1/rel/events/<int:pk>/', RelEventDetailView.as_view(), name='rel_event_detail'),
 
     path('api/v1/nosql/events/', NosqlEventListCreateView.as_view(), name='nosql_events_list'),
-    path('api/v1/nosql/events/<str:pk>/', NosqlEventDetailView.as_view(), name='nosql_event_detail'),
+    path('api/v1/nosql/events/<str:id>/', NosqlEventDetailView.as_view(), name='nosql_event_detail'),
 
     path('api/v1/obj/events/', ObjEventListCreateView.as_view(), name='obj_events_list'),
     path('api/v1/obj/events/<int:pk>/', ObjEventDetailView.as_view(), name='obj_event_detail'),
@@ -208,9 +208,9 @@ urlpatterns = [
     path('api/v1/rel/messages/<int:pk>/', RelMessageDetailView.as_view(), name='rel_message_detail'),
     path('api/v1/rel/messages/all/', RelMessageAllListView.as_view(), name='rel_messages_all'),
 
-    path('api/v1/nosql/messages/', NosqlMessageListCreateView.as_view(), name='nosql_messages_list'),
-    path('api/v1/nosql/messages/<str:pk>/', NosqlMessageDetailView.as_view(), name='nosql_message_detail'),
     path('api/v1/nosql/messages/all/', NosqlMessageAllListView.as_view(), name='nosql_messages_all'),
+    path('api/v1/nosql/messages/', NosqlMessageListCreateView.as_view(), name='nosql_messages_list'),
+    path('api/v1/nosql/messages/<str:id>/', NosqlMessageDetailView.as_view(), name='nosql_message_detail'),
 
     path('api/v1/obj/messages/', ObjUserMessageListCreateView.as_view(), name='obj_messages_list'),
     path('api/v1/obj/messages/all/', ObjUserMessageListCreateView.as_view(), name='obj_messages_all'),
