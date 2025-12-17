@@ -10,11 +10,8 @@ from .mongo_client import users_collection, tokens_collection
 
 
 class MongoUser:
-    """
-    Minimalny obiekt usera dla DRF permissions.IsAuthenticated itd.
-    """
     def __init__(self, user_oid: ObjectId, email: str, is_active: bool = True):
-        self.id = str(user_oid)     # string ObjectId
+        self.id = str(user_oid)
         self.email = email
         self.is_active = is_active
 
@@ -24,11 +21,6 @@ class MongoUser:
 
 
 class MongoTokenAuthentication(BaseAuthentication):
-    """
-    Obsługuje nagłówek:
-      Authorization: Token <key>
-    gdzie <key> jest kluczem z kolekcji tokens.
-    """
     keyword = "Token"
 
     def authenticate(self, request):
@@ -38,7 +30,7 @@ class MongoTokenAuthentication(BaseAuthentication):
 
         parts = auth.split()
         if len(parts) != 2 or parts[0] != self.keyword:
-            return None  # pozwól innym auth (dla innych baz)
+            return None
 
         key = parts[1].strip()
         token_doc = tokens_collection.find_one({"_id": key})

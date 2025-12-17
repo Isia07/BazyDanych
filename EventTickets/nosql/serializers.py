@@ -56,17 +56,36 @@ class EventSerializer(serializers.Serializer):
 class TicketSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
 
-    event = serializers.CharField(write_only=True)
+    event = serializers.CharField(write_only=True, required=False)
+    event_id = serializers.CharField(write_only=True, required=False)
+
     event_detail = EventSerializer(read_only=True)
 
     ticket_type = TicketTypeObjSerializer(read_only=True)
-    ticket_type_id = serializers.CharField(write_only=True)
+
+    ticket_type_id = serializers.CharField(write_only=True, required=False)
+    ticket_type_input = serializers.CharField(write_only=True, required=False)
 
     quantity = serializers.IntegerField(min_value=1)
     order_id = serializers.CharField(read_only=True, allow_null=True)
 
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
+
+    def to_internal_value(self, data):
+        d = dict(data)
+
+        if "event" not in d and "event_id" in d:
+            d["event"] = d["event_id"]
+
+        if "ticket_type_id" not in d:
+            if "ticket_type" in d:
+                d["ticket_type_id"] = d["ticket_type"]
+            elif "ticket_type_input" in d:
+                d["ticket_type_id"] = d["ticket_type_input"]
+
+        return super().to_internal_value(d)
+
 
 class TicketCreateSerializer(serializers.Serializer):
     event = serializers.CharField()

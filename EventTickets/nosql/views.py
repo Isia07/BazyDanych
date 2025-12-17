@@ -2,13 +2,15 @@ from collections import defaultdict
 from decimal import Decimal, ROUND_HALF_UP
 
 from bson import ObjectId
-from django.utils import timezone
+from django.utils import timezone as dj_tz
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status as http
 from rest_framework import permissions
 from datetime import datetime, timedelta, timezone as dt_tz
 
+from bson.errors import InvalidId
+from pymongo import ReturnDocument
 import secrets
 from .token_auth import MongoTokenAuthentication
 from .mongo_client import (
@@ -22,6 +24,7 @@ from .mongo_client import (
     ticket_types_collection,
     statuses_collection,
     tokens_collection,
+    counters_collection,
 )
 from .serializers import (
     StatusObjSerializer, EventTypeObjSerializer, TicketTypeObjSerializer, DiscountObjSerializer,
@@ -41,10 +44,10 @@ from .mongo_client import users_collection
 
 
 def issue_token(user_oid: ObjectId) -> str:
-    key = secrets.token_hex(20)  # 40 znaków hex
+    key = secrets.token_hex(20)
     tokens_collection.insert_one({
-        "_id": key,                 # klucz tokena jako _id (łatwe wyszukiwanie)
-        "user_id": user_oid,        # ObjectId użytkownika
+        "_id": key,
+        "user_id": user_oid,
         "created_at": datetime.now(dt_tz.utc),
     })
     return key
@@ -76,7 +79,7 @@ class NosqlRegisterView(APIView):
         }
         user_id = users_collection.insert_one(doc).inserted_id
 
-        token = issue_token(user_id)  # <-- Token dla frontu: Authorization: Token <token>
+        token = issue_token(user_id)
 
         return Response(
             {"success": True, "token": token, "user": {"id": str(user_id), "email": email}},
@@ -109,8 +112,6 @@ class NosqlLoginView(APIView):
 
 
 
-
-
 # ---------------- helpers ----------------
 
 def oid(x: str) -> ObjectId:
@@ -133,7 +134,14 @@ def doc_to_api(doc: dict) -> dict:
     return normalize_bson(d)
 
 def now():
-    return timezone.now()
+    return dj_tz.now()
+
+def ensure_aware_utc(dt):
+    if dt is None:
+        return None
+    if dj_tz.is_naive(dt):
+        return dt.replace(tzinfo=dt_tz.utc)
+    return dt.astimezone(dt_tz.utc)
 
 def serialize_event(event_doc):
     e = doc_to_api(event_doc)
@@ -156,7 +164,6 @@ def serialize_ticket(ticket_doc):
 def order_to_api(order_doc):
     o = doc_to_api(order_doc)
 
-    # user_id trzymamy jako ObjectId -> zwracamy jako string
     o["user_id"] = str(order_doc["user_id"]) if order_doc.get("user_id") else None
 
     disc = None
@@ -166,6 +173,28 @@ def order_to_api(order_doc):
 
     tdocs = list(tickets_collection.find({"order_id": order_doc["_id"]}))
     o["tickets"] = [serialize_ticket(t) for t in tdocs]
+    return o
+
+def next_seq(name: str) -> int:
+    doc = counters_collection.find_one_and_update(
+        {"_id": name},
+        {"$inc": {"seq": 1}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER,
+    )
+    return int(doc["seq"])
+
+def try_oid(x):
+    try:
+        return ObjectId(str(x))
+    except (InvalidId, TypeError):
+        return None
+
+def parse_event_key(x):
+    s = str(x)
+    if s.isdigit():
+        return int(s)
+    o = try_oid(s)
     return o
 
 # ---------------- statuses ----------------
@@ -401,6 +430,7 @@ class NosqlEventListCreateView(APIView):
         v = ser.validated_data
 
         payload = {
+            "_id": next_seq("events"),
             "name": v["name"],
             "description": v["description"],
             "localization": v["localization"],
@@ -413,15 +443,20 @@ class NosqlEventListCreateView(APIView):
             "event_type_id": oid(v["event_type_id"]),
             "status_id": oid(v["status_id"]),
         }
-        _id = events_collection.insert_one(payload).inserted_id
-        return Response(serialize_event(events_collection.find_one({"_id": _id})), status=http.HTTP_201_CREATED)
+
+        events_collection.insert_one(payload)
+
+        return Response(serialize_event(events_collection.find_one({"_id": payload["_id"]})), status=http.HTTP_201_CREATED)
 
 class NosqlEventDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get(self, request, id):
-        d = events_collection.find_one({"_id": oid(id)})
+        if not str(id).isdigit():
+            return Response({"detail": "Invalid id"}, status=http.HTTP_400_BAD_REQUEST)
+        
+        d = events_collection.find_one({"_id": int(id)})
         if not d:
             return Response({"detail": "Not found"}, status=http.HTTP_404_NOT_FOUND)
         return Response(serialize_event(d))
@@ -472,20 +507,25 @@ class NosqlTicketListCreateView(APIView):
         ser.is_valid(raise_exception=True)
         v = ser.validated_data
 
-        ev = events_collection.find_one({"_id": oid(v["event"])})
+        event_key = parse_event_key(v["event"])
+        if event_key is None:
+            return Response({"detail": "Invalid event id"}, status=http.HTTP_400_BAD_REQUEST)
+
+        ev = events_collection.find_one({"_id": event_key})
         if not ev:
             return Response({"detail": "Event not found"}, status=http.HTTP_400_BAD_REQUEST)
 
         if int(ev["quantity"]) < int(v["quantity"]):
             return Response({"detail": f"{ev['quantity']} tickets left"}, status=http.HTTP_400_BAD_REQUEST)
 
-        tt = ticket_types_collection.find_one({"_id": oid(v["ticket_type_id"])})
+        tt_oid = oid(v["ticket_type_id"])
+        tt = ticket_types_collection.find_one({"_id": tt_oid})
         if not tt:
             return Response({"detail": "Ticket type not found"}, status=http.HTTP_400_BAD_REQUEST)
 
         _id = tickets_collection.insert_one({
-            "event_id": oid(v["event"]),
-            "ticket_type_id": oid(v["ticket_type_id"]),
+            "event_id": event_key,
+            "ticket_type_id": tt_oid,
             "quantity": int(v["quantity"]),
             "order_id": None,
             "created_at": now(),
@@ -529,24 +569,44 @@ class NosqlOrderListCreateView(APIView):
         discount_id = data.get("discount", None)
 
         discount_doc = None
-        if discount_id is not None:
+        if discount_id:
             discount_doc = discounts_collection.find_one({"_id": oid(discount_id)})
             if not discount_doc:
-                return Response({"discount": ["Invalid discount code (not found)"]}, status=http.HTTP_400_BAD_REQUEST)
-            now_dt = timezone.now()
-            if discount_doc["valid_from"] > now_dt or discount_doc["valid_to"] < now_dt:
-                return Response({"discount": ["Invalid discount code (check validity dates)"]}, status=http.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"discount": ["Invalid discount code (not found)"]},
+                    status=http.HTTP_400_BAD_REQUEST
+                )
+
+            now_dt = dj_tz.now().astimezone(dt_tz.utc)
+
+            valid_from = ensure_aware_utc(discount_doc.get("valid_from"))
+            valid_to = ensure_aware_utc(discount_doc.get("valid_to"))
+
+            if valid_from and valid_from > now_dt:
+                return Response(
+                    {"discount": ["Invalid discount code (check validity dates)"]},
+                    status=http.HTTP_400_BAD_REQUEST
+                )
+
+            if valid_to and valid_to < now_dt:
+                return Response(
+                    {"discount": ["Invalid discount code (check validity dates)"]},
+                    status=http.HTTP_400_BAD_REQUEST
+                )
 
         quantity_per_event = defaultdict(int)
         total = Decimal("0.00")
         quantity_to_subtract = defaultdict(int)
 
         for t in tickets_data:
-            ev_oid = oid(t["event"])
+            ev_key = parse_event_key(t["event"])
+            if ev_key is None:
+                return Response({"detail": "Invalid event id"}, status=http.HTTP_400_BAD_REQUEST)
+
             tt_oid = oid(t["ticket_type"])
             qty = int(t["quantity"])
 
-            ev = events_collection.find_one({"_id": ev_oid})
+            ev = events_collection.find_one({"_id": ev_key})
             if not ev:
                 return Response({"detail": "Event not found"}, status=http.HTTP_400_BAD_REQUEST)
 
@@ -557,7 +617,7 @@ class NosqlOrderListCreateView(APIView):
                     status=http.HTTP_400_BAD_REQUEST
                 )
 
-            quantity_per_event[str(ev_oid)] += qty
+            quantity_per_event[str(ev_key)] += qty
 
             tt = ticket_types_collection.find_one({"_id": tt_oid})
             if not tt:
@@ -568,10 +628,17 @@ class NosqlOrderListCreateView(APIView):
             price_per_unit = base_price * (Decimal("1") - type_discount)
             total += price_per_unit * Decimal(qty)
 
-            quantity_to_subtract[ev_oid] += qty
+            quantity_to_subtract[ev_key] += qty
 
-        for ev_id_str, total_qty in quantity_per_event.items():
-            ev = events_collection.find_one({"_id": oid(ev_id_str)})
+        for ev_key_str, total_qty in quantity_per_event.items():
+            ev_key = parse_event_key(ev_key_str)
+            if ev_key is None:
+                return Response({"detail": "Invalid event id"}, status=http.HTTP_400_BAD_REQUEST)
+
+            ev = events_collection.find_one({"_id": ev_key})
+            if not ev:
+                return Response({"detail": "Event not found"}, status=http.HTTP_400_BAD_REQUEST)
+
             if total_qty > int(ev["quantity"]):
                 return Response(
                     {"detail": f"For event '{ev['name']}' only {ev['quantity']} tickets are available, "
@@ -585,13 +652,16 @@ class NosqlOrderListCreateView(APIView):
 
         total = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-        for ev_oid, qty in quantity_to_subtract.items():
+        for ev_key, qty in quantity_to_subtract.items():
             ok = events_collection.update_one(
-                {"_id": ev_oid, "quantity": {"$gte": qty}},
+                {"_id": ev_key, "quantity": {"$gte": qty}},
                 {"$inc": {"quantity": -qty}, "$set": {"updated_at": now()}}
             ).matched_count
             if not ok:
-                return Response({"detail": "Not enough tickets available (race condition)"}, status=http.HTTP_409_CONFLICT)
+                return Response(
+                    {"detail": "Not enough tickets available (race condition)"},
+                    status=http.HTTP_409_CONFLICT
+                )
 
         order_id = orders_collection.insert_one({
             "user_id": oid(request.user.id),
@@ -602,7 +672,7 @@ class NosqlOrderListCreateView(APIView):
 
         for t in tickets_data:
             tickets_collection.insert_one({
-                "event_id": oid(t["event"]),
+                "event_id": parse_event_key(t["event"]),
                 "ticket_type_id": oid(t["ticket_type"]),
                 "quantity": int(t["quantity"]),
                 "order_id": order_id,
@@ -610,8 +680,10 @@ class NosqlOrderListCreateView(APIView):
                 "updated_at": now(),
             })
 
-        return Response(order_to_api(orders_collection.find_one({"_id": order_id})),
-                        status=http.HTTP_201_CREATED)
+        return Response(
+            order_to_api(orders_collection.find_one({"_id": order_id})),
+            status=http.HTTP_201_CREATED
+        )
 
 class NosqlOrderDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
@@ -712,4 +784,3 @@ class NosqlMessageAllListView(APIView):
     def get(self, request):
         docs = list(messages_collection.find({}).sort("created_at", -1))
         return Response([doc_to_api(d) for d in docs])
-
