@@ -8,7 +8,6 @@ from rest_framework.exceptions import AuthenticationFailed
 from .mongo_client import users_collection, tokens_collection
 
 
-
 class MongoUser:
     def __init__(self, user_oid: ObjectId, email: str, is_active: bool = True):
         self.id = str(user_oid)

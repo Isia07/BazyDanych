@@ -22,6 +22,7 @@ class UserDoc:
 class DiscountDoc:
     code: str
     discount_percentage: float
+    valid_from: datetime
     valid_to: datetime
 
 

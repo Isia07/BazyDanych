@@ -25,7 +25,6 @@ else:
 
 db = client[name]
 
-# Kolekcje
 users_collection = db["users"]
 events_collection = db["events"]
 orders_collection = db["orders"]
