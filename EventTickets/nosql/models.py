@@ -16,6 +16,7 @@ class UserDoc:
     role: str = ""        
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    is_staff: bool = False
 
 
 @dataclass
