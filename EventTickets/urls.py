@@ -106,7 +106,7 @@ urlpatterns = [
     path('api/v1/nosql/discounts/<str:pk>/', NosqlDiscountDetailView.as_view(), name='nosql_discount_detail'),
     path('api/v1/nosql/discounts/', NosqlDiscountListCreateView.as_view(), name='nosql_discounts_list'),
 
-    path('api/v1/obj/discounts/<int:pk>/', ObjDiscountsDetailView.as_view(), name='obj_discount_detail'),
+    path('api/v1/obj/discounts/<str:pk>/', ObjDiscountsDetailView.as_view(), name='obj_discount_detail'),
     path('api/v1/obj/discounts/', ObjDiscountsListCreateView.as_view(), name='obj_discounts_list'),
 
     # TICKET TYPES
@@ -119,7 +119,7 @@ urlpatterns = [
     path('api/v1/nosql/ticket-types/<str:pk>/', NosqlTicketTypeDetailView.as_view(), name='nosql_ticket_type_detail'),
     path('api/v1/nosql/ticket-types/', NosqlTicketTypeListCreateView.as_view(), name='nosql_ticket_types_list'),
 
-    path('api/v1/obj/ticket-types/<int:pk>/', ObjTicketTypeDetailView.as_view(), name='obj_ticket_type_detail'),
+    path('api/v1/obj/ticket-types/<str:pk>/', ObjTicketTypeDetailView.as_view(), name='obj_ticket_type_detail'),
     path('api/v1/obj/ticket-types/', ObjTicketTypeListCreateView.as_view(), name='obj_ticket_types_list'),
 
     # STATUSES
@@ -132,7 +132,7 @@ urlpatterns = [
     path('api/v1/nosql/statuses/<str:pk>/', NosqlStatusDetailView.as_view(), name='nosql_status_detail'),
     path('api/v1/nosql/statuses/', NosqlStatusListCreateView.as_view(), name='nosql_statuses_list'),
 
-    path('api/v1/obj/statuses/<int:pk>/', ObjStatusDetailView.as_view(), name='obj_status_detail'),
+    path('api/v1/obj/statuses/<str:pk>/', ObjStatusDetailView.as_view(), name='obj_status_detail'),
     path('api/v1/obj/statuses/', ObjStatusListCreateView.as_view(), name='obj_statuses_list'),
 
     # EVENT TYPES
@@ -145,7 +145,7 @@ urlpatterns = [
     path('api/v1/nosql/event-types/<str:pk>/', NosqlEventTypeDetailView.as_view(), name='nosql_event_type_detail'),
     path('api/v1/nosql/event-types/', NosqlEventTypeListCreateView.as_view(), name='nosql_event_types_list'),
 
-    path('api/v1/obj/event-types/<int:pk>/', ObjEventTypeDetailView.as_view(), name='obj_event_type_detail'),
+    path('api/v1/obj/event-types/<str:pk>/', ObjEventTypeDetailView.as_view(), name='obj_event_type_detail'),
     path('api/v1/obj/event-types/', ObjEventTypeListCreateView.as_view(), name='obj_event_types_list'),
 
     # EVENTS
@@ -158,7 +158,7 @@ urlpatterns = [
     path('api/v1/nosql/events/<str:pk>/', NosqlEventDetailView.as_view(), name='nosql_event_detail'),
     path('api/v1/nosql/events/', NosqlEventListCreateView.as_view(), name='nosql_events_list'),
 
-    path('api/v1/obj/events/<int:pk>/', ObjEventDetailView.as_view(), name='obj_event_detail'),
+    path('api/v1/obj/events/<str:pk>/', ObjEventDetailView.as_view(), name='obj_event_detail'),
     path('api/v1/obj/events/', ObjEventListCreateView.as_view(), name='obj_events_list'),
 
     # TICKETS
@@ -198,7 +198,7 @@ urlpatterns = [
     path('api/v1/nosql/notifications/<str:pk>/', NosqlNotificationDetailView.as_view(), name='nosql_notification_detail'),
     path('api/v1/nosql/notifications/', NosqlNotificationListCreateView.as_view(), name='nosql_notifications_list'),
 
-    path('api/v1/obj/notifications/<int:pk>/read/', ObjUserNotificationListView.as_view(), name='obj_notification_read'),
+    path('api/v1/obj/notifications/<str:pk>/read/', ObjUserNotificationListView.as_view(), name='obj_notification_read'),
     path('api/v1/obj/notifications/', ObjUserNotificationListView.as_view(), name='obj_notifications_list'),
 
     # MESSAGES
