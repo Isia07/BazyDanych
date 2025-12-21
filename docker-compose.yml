@@ -6,7 +6,7 @@ services:
     entrypoint: ["python", "/app/entrypoint.py"]
     environment:
       - DB_OBJ_REL_URL=postgres://postgres:postgres@db_obj_rel:5432/db_obj_rel
-      - DB_OBJECT_URL=postgres://obj_user:obj_haslo@db_object:5432/db_object
+      - DB_OBJECT_URL=zeo://db_object:8090
       - DB_RELATIONAL_URL=postgres://postgres:postgres@db_relational:5432/db_relational
       - DB_NOSQL_URL=mongodb://nosql_user:nosql_haslo@db_nosql:27017/
 
@@ -41,17 +41,18 @@ services:
 
   # ──────────────────────── objective  ────────────────────────
   db_object:
-    image: postgres:16-alpine
-    environment:
-      - POSTGRES_USER=obj_user
-      - POSTGRES_PASSWORD=obj_haslo
-      - POSTGRES_DB=db_object
+    build: .
+    entrypoint: []
+    command: runzeo -a 0.0.0.0:8090 -f /data/Data.fs
     ports:
-      - "5435:5432"
+      - "8090:8090"
     volumes:
-      - pgdata_object:/var/lib/postgresql/data
+      - zodb_data:/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "obj_user", "-d", "db_object"]
+      test: ["CMD-SHELL", "python -c 'import socket; s=socket.socket(); s.connect((\"localhost\", 8090)); s.close()'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # ──────────────────────── relational  ────────────────────────
   db_relational:
@@ -82,6 +83,6 @@ services:
 
 volumes:
   pgdata_obj_rel:
-  pgdata_object:
+  zodb_data:
   pgdata_relational:
   mongodata:

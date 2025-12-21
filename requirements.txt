@@ -28,3 +28,8 @@ types-requests==2.32.4.20250913
 typing_extensions==4.15.0
 tzdata==2025.3
 urllib3==2.6.2
+ZODB==6.0
+ZEO==6.0
+BTrees==5.2
+persistent==6.1
+transaction==5.0
