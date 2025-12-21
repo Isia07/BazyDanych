@@ -19,12 +19,11 @@ class RelLoginView(BaseLoginView):
 
 class RelDiscountListCreateView(generics.ListCreateAPIView):
     serializer_class = DiscountSerializer
-    permission_classes = [permissions.AllowAny]
 
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Discount.objects.using("relational").all()
@@ -37,9 +36,9 @@ class RelDiscountDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DiscountSerializer
 
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Discount.objects.using("relational").all()
@@ -56,7 +55,7 @@ class RelTicketTypeListCreateView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == "POST":
-            return [permissions.IsAuthenticated()]
+            return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
     def get_queryset(self):
@@ -72,7 +71,7 @@ class RelTicketTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return TicketType.objects.using("relational").all()
@@ -86,7 +85,11 @@ class RelTicketTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class RelStatusListCreateView(generics.ListCreateAPIView):
     serializer_class = StatusSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Status.objects.using("relational").all()
@@ -101,7 +104,7 @@ class RelStatusDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Status.objects.using("relational").all()
@@ -118,7 +121,7 @@ class RelEventTypeListCreateView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == "POST":
-            return [permissions.IsAuthenticated()]
+            return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
     def get_queryset(self):
@@ -134,7 +137,7 @@ class RelEventTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return EventType.objects.using("relational").all()
@@ -159,7 +162,11 @@ class RelMessageListCreateView(generics.ListCreateAPIView):
 
 class RelMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Message.objects.using("relational").filter(user=self.request.user)
@@ -172,7 +179,11 @@ class RelMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class RelNotificationListCreateView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Notification.objects.using("relational").filter(user=self.request.user, is_read=False).order_by('-created_at')
@@ -185,7 +196,11 @@ class RelNotificationListCreateView(generics.ListCreateAPIView):
 
 class RelNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Notification.objects.using("relational").filter(user=self.request.user)
@@ -205,7 +220,11 @@ class RelNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class RelEventListCreateView(generics.ListCreateAPIView):
     serializer_class = EventSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Event.objects.select_related('event_type', 'status').using("relational").all()
@@ -216,7 +235,11 @@ class RelEventListCreateView(generics.ListCreateAPIView):
 
 class RelEventDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EventSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Event.objects.using("relational").select_related('event_type', 'status').all()
@@ -230,7 +253,11 @@ class RelEventDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class RelTicketListCreateView(generics.ListCreateAPIView):
     serializer_class = TicketSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Ticket.objects.using("relational").select_related('event', 'ticket_type', 'order').all()
@@ -241,7 +268,11 @@ class RelTicketListCreateView(generics.ListCreateAPIView):
 
 class RelTicketDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TicketSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Ticket.objects.using("relational").select_related('event', 'discount', 'ticket_type', 'order').all()
@@ -273,8 +304,12 @@ class RelOrderListCreateView(generics.ListCreateAPIView):
 
 
 class RelOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Order.objects.using('relational').filter(user=self.request.user).prefetch_related(
