@@ -117,6 +117,7 @@ class NosqlRegisterView(APIView):
     def post(self, request):
         email = (request.data.get("email") or "").strip().lower()
         password = request.data.get("password") or ""
+        is_staff = bool(request.data.get("is_staff", False))
 
         if not email or not password:
             return Response({"success": False, "error": "email and password required"}, status=400)
@@ -131,6 +132,7 @@ class NosqlRegisterView(APIView):
             "name": "",
             "surname": "",
             "is_active": True,
+            "is_staff": is_staff,
             "created_at": datetime.now(),
             "updated_at": datetime.now(),
         }
@@ -138,7 +140,7 @@ class NosqlRegisterView(APIView):
         token = issue_token(user_id)
 
         return Response(
-            {"success": True, "token": token, "user": {"id": str(user_id), "email": email}},
+            {"success": True, "token": token, "user": {"id": str(user_id), "email": email, "is_staff": is_staff}},
             status=201
         )
 
@@ -158,12 +160,17 @@ class NosqlLoginView(APIView):
             return Response({"success": False, "error": "Account deactivated"}, status=400)
 
         token = issue_token(doc["_id"])
-        return Response({"token": token, "user": {"id": str(doc["_id"]), "email": email}}, status=200)
+        is_staff = doc.get("is_staff", False)
+        return Response({"token": token, "user": {"id": str(doc["_id"]), "email": email, "is_staff": is_staff}}, status=200)
 
 
 class NosqlStatusListCreateView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request):
         return Response([doc_to_api(d) for d in statuses_collection.find({})])
@@ -179,6 +186,11 @@ class NosqlStatusListCreateView(APIView):
 
 class NosqlStatusDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_object(self, pk: str):
         try:
@@ -211,7 +223,11 @@ class NosqlStatusDetailView(APIView):
 
 class NosqlEventTypeListCreateView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
 
     def get(self, request):
         return Response([doc_to_api(d) for d in event_types_collection.find({})])
@@ -227,6 +243,11 @@ class NosqlEventTypeListCreateView(APIView):
 
 class NosqlEventTypeDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_object(self, pk: str):
         try:
@@ -259,7 +280,11 @@ class NosqlEventTypeDetailView(APIView):
 
 class NosqlTicketTypeListCreateView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
 
     def get(self, request):
         return Response([doc_to_api(d) for d in ticket_types_collection.find({})])
@@ -278,6 +303,11 @@ class NosqlTicketTypeListCreateView(APIView):
 
 class NosqlTicketTypeDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_object(self, pk: str):
         try:
@@ -313,7 +343,11 @@ class NosqlTicketTypeDetailView(APIView):
 
 class NosqlDiscountListCreateView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request):
         return Response([doc_to_api(d) for d in discounts_collection.find({})])
@@ -335,6 +369,11 @@ class NosqlDiscountListCreateView(APIView):
 
 class NosqlDiscountDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_object(self, pk: str):
         try:
@@ -376,7 +415,11 @@ class NosqlDiscountDetailView(APIView):
 
 class NosqlEventListCreateView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request):
         docs = list(events_collection.find({}))
@@ -408,7 +451,11 @@ class NosqlEventListCreateView(APIView):
 
 class NosqlEventDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get_object(self, pk: str):
         try:
@@ -456,7 +503,11 @@ class NosqlEventDetailView(APIView):
 
 class NosqlTicketListCreateView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request):
         docs = list(tickets_collection.find({}))
@@ -499,7 +550,11 @@ class NosqlTicketListCreateView(APIView):
 
 class NosqlTicketDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_object(self, pk: str):
         try:
@@ -639,7 +694,11 @@ class NosqlOrderListCreateView(APIView):
 
 class NosqlOrderDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request, pk):
         try:
@@ -653,7 +712,11 @@ class NosqlOrderDetailView(APIView):
 
 class NosqlNotificationListCreateView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request):
         docs = list(notifications_collection.find(
@@ -686,7 +749,11 @@ class NosqlNotificationListCreateView(APIView):
 
 class NosqlNotificationDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_object(self, pk: str):
         try:
@@ -731,7 +798,11 @@ class NosqlMessageListCreateView(APIView):
 
 class NosqlMessageDetailView(APIView):
     authentication_classes = [MongoTokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request, pk):
         try:

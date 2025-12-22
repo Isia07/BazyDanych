@@ -115,7 +115,7 @@ relational_database = {
 }
 
 DATABASES = {
-    "default": nosql_database,
+    "default": obj_rel_database,  # To create superuser set your database here
     "objective_relational": obj_rel_database,
     "relational": relational_database,
     'nosql': nosql_database,

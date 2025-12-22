@@ -9,10 +9,11 @@ from .mongo_client import users_collection, tokens_collection
 
 
 class MongoUser:
-    def __init__(self, user_oid: ObjectId, email: str, is_active: bool = True):
+    def __init__(self, user_oid: ObjectId, email: str, is_active: bool = True, is_staff: bool = False):
         self.id = str(user_oid)
         self.email = email
         self.is_active = is_active
+        self.is_staff = is_staff
 
     @property
     def is_authenticated(self):
@@ -46,4 +47,13 @@ class MongoTokenAuthentication(BaseAuthentication):
         if not user_doc.get("is_active", True):
             raise AuthenticationFailed("User inactive.")
 
-        return (MongoUser(user_oid, user_doc.get("email", ""), True), key)
+        # return (MongoUser(user_oid, user_doc.get("email", ""), True), key)
+        return (
+            MongoUser(
+                user_oid=user_oid,
+                email=user_doc.get("email", ""),
+                is_active=user_doc.get("is_active", True),
+                is_staff=user_doc.get("is_staff", False),
+            ),
+            key,
+        )
