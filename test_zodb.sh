@@ -25,6 +25,11 @@ REGISTER_RES=$(curl -s -X POST "$API_URL/auth/register/" \
   -H "Content-Type: application/json" \
   -d "$REQ_DATA")
 echo "response: $REGISTER_RES"
+if echo "$REGISTER_RES" | grep -q "\"is_staff\":"; then
+    echo -e "${GREEN}is_staff present in register response${NC}"
+else
+    echo -e "${RED}is_staff missing in register response${NC}"
+fi
 TOKEN=$(extract_token "$REGISTER_RES")
 USER_ID=$(echo $REGISTER_RES | python3 -c "import sys, json; print(json.load(sys.stdin).get('user', {}).get('id', ''))")
 

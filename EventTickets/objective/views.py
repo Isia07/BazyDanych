@@ -27,6 +27,7 @@ class ZODBUser:
         self.id = user_obj.id
         self.email = user_obj.email
         self.is_active = user_obj.is_active
+        self.is_staff = getattr(user_obj, 'is_admin', False)
         self.is_authenticated = True
 
 class ZODBTokenAuthentication(BaseAuthentication):
@@ -121,7 +122,11 @@ class RegisterView(APIView):
         return Response({
             "success": True, 
             "token": token_key, 
-            "user": {"id": new_user.id, "email": email}
+            "user": {
+                "id": new_user.id, 
+                "email": email,
+                "is_staff": new_user.is_admin
+            }
         }, status=201)
 
 class LoginView(APIView):
@@ -151,7 +156,11 @@ class LoginView(APIView):
 
         return Response({
             "token": token_key, 
-            "user": {"id": user.id, "email": email}
+            "user": {
+                "id": user.id, 
+                "email": email,
+                "is_staff": user.is_admin
+            }
         }, status=200)
 
 
