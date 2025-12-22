@@ -160,7 +160,8 @@ class NosqlLoginView(APIView):
             return Response({"success": False, "error": "Account deactivated"}, status=400)
 
         token = issue_token(doc["_id"])
-        return Response({"token": token, "user": {"id": str(doc["_id"]), "email": email}}, status=200)
+        is_staff = doc.get("is_staff", False)
+        return Response({"token": token, "user": {"id": str(doc["_id"]), "email": email, "is_staff": is_staff}}, status=200)
 
 
 class NosqlStatusListCreateView(APIView):

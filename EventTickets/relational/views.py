@@ -169,7 +169,7 @@ class RelMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
         return [permissions.IsAdminUser()]
 
     def get_queryset(self):
-        return Message.objects.using("relational").filter(user=self.request.user)
+        return Message.objects.using("relational")
 
     def perform_update(self, serializer):
         serializer.save()
@@ -198,9 +198,9 @@ class RelNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
 
     def get_permissions(self):
-        if self.request.method == "GET":
-            return [permissions.IsAuthenticated()]
-        return [permissions.IsAdminUser()]
+        if self.request.method == "POST":
+            return [permissions.IsAdminUser()]
+        return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         return Notification.objects.using("relational").filter(user=self.request.user)

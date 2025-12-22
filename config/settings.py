@@ -125,7 +125,7 @@ objective_database = {
 }
 
 DATABASES = {
-    "default": relational_database,  # To create superuser set your database here
+    "default": obj_rel_database,  # To create superuser set your database here
     "objective_relational": obj_rel_database,
     "relational": relational_database,
     "objective": objective_database,
