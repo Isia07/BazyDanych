@@ -478,8 +478,17 @@ class EventDetailView(ZODBView):
             return Response(status=204)
         return Response(status=404)
 
-class OrderCreateView(ZODBView):
+class OrderListCreateView(ZODBView):
     permission_classes = [permissions.IsAuthenticated]
+
+    @with_zodb
+    def get(self, request):
+        if not self.current_user: return Response([], 200)
+        user_orders = []
+        for order in self.root['orders'].values():
+            if order.user.id == self.current_user.id:
+                user_orders.append(order)
+        return Response([OrdersSerializer(o).data for o in user_orders])
 
     @with_zodb
     def post(self, request):
@@ -489,35 +498,43 @@ class OrderCreateView(ZODBView):
         ser = OrdersSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         
-        tickets_data = ser.validated_data.get('tickets_data', [])
-        discount_id = ser.validated_data.get('discount_id')
+        tickets_data = ser.validated_data.get('tickets_data') or ser.validated_data.get('tickets', [])
+        discount_id = ser.validated_data.get('discount_id') or request.data.get('discount')
+        
+        if discount_id:
+            discount_id = str(discount_id)
         
         discount = None
         if discount_id:
             discount = self.root['discounts'].get(discount_id)
             if not discount: return Response({"error": "Invalid discount"}, status=400)
-            
-        total = 0.0
         
         with transaction.manager:
-            for item in tickets_data:
-                ev = self.root['events'].get(item['event_id'])
-                qty = item['quantity']
-            
             order = Orders(user=self.current_user, total_price=0, discount=discount)
             order_tickets = []
             final_total = 0.0
             
             for item in tickets_data:
-                ev = self.root['events'].get(item['event_id'])
-                tt = self.root['ticket_types'].get(item['ticket_type_id'])
+                event_id = str(item.get('event_id') or item.get('event', ''))
+                ticket_type_id = str(item.get('ticket_type_id') or item.get('ticket_type', ''))
                 qty = item.get('quantity', 1)
+                
+                ev = self.root['events'].get(event_id)
+                tt = self.root['ticket_types'].get(ticket_type_id)
+                
+                if not ev:
+                    transaction.abort()
+                    return Response({"error": f"Event not found: {event_id}"}, 400)
+                if not tt:
+                    transaction.abort()
+                    return Response({"error": f"Ticket type not found: {ticket_type_id}"}, 400)
                 
                 if ev.quantity < qty:
                      transaction.abort()
                      return Response({"error": f"Not enough quantity for {ev.name}"}, 400)
                 
                 ev.quantity -= qty
+                ev._p_changed = True
                 
                 ticket = Tickets(event=ev, order=order, ticket_type=tt, quantity=qty)
                 self.root['tickets'][ticket.id] = ticket
@@ -535,26 +552,40 @@ class OrderCreateView(ZODBView):
             
         return Response(OrdersSerializer(order).data, status=201)
 
-class UserOrderListView(ZODBView):
-    authentication_classes = [ZODBTokenAuthentication]
-    
+class OrderDetailView(ZODBView):
+    permission_classes = [permissions.IsAuthenticated]
+
     @with_zodb
-    def get(self, request):
-        if not self.current_user: return Response([], 200)
-        user_orders = []
-        for order in self.root['orders'].values():
-            if order.user.id == self.current_user.id:
-                user_orders.append(order)
-        
-        return Response([OrdersSerializer(o).data for o in user_orders])
+    def get(self, request, pk):
+        order = self.root['orders'].get(pk)
+        if not order: return Response(status=404)
+        if self.current_user and order.user.id != self.current_user.id:
+            return Response(status=404)
+        return Response(OrdersSerializer(order).data)
 
 class TicketListCreateView(ZODBView):
     @with_zodb
     def get(self, request):
         return Response([TicketsSerializer(t).data for t in self.root['tickets'].values()])
 
-class UserMessageListCreateView(ZODBView):
+class TicketDetailView(ZODBView):
+    @with_zodb
+    def get(self, request, pk):
+        ticket = self.root['tickets'].get(pk)
+        if not ticket: return Response(status=404)
+        return Response(TicketsSerializer(ticket).data)
+
+    @with_zodb
+    def delete(self, request, pk):
+        if pk in self.root['tickets']:
+            with transaction.manager:
+                del self.root['tickets'][pk]
+            return Response(status=204)
+        return Response(status=404)
+
+class MessageListCreateView(ZODBView):
     authentication_classes = [ZODBTokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     
     @with_zodb
     def get(self, request):
@@ -571,20 +602,89 @@ class UserMessageListCreateView(ZODBView):
             self.root['messages'][msg.id] = msg
         return Response(MessagesSerializer(msg).data, status=201)
 
-class UserNotificationListView(ZODBView):
+class MessageDetailView(ZODBView):
     authentication_classes = [ZODBTokenAuthentication]
+    
+    @with_zodb
+    def get(self, request, pk):
+        msg = self.root['messages'].get(pk)
+        if not msg: return Response(status=404)
+        return Response(MessagesSerializer(msg).data)
+
+    @with_zodb
+    def delete(self, request, pk):
+        if pk in self.root['messages']:
+            with transaction.manager:
+                del self.root['messages'][pk]
+            return Response(status=204)
+        return Response(status=404)
+
+class MessageAllListView(ZODBView):
+    authentication_classes = [ZODBTokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    @with_zodb
+    def get(self, request):
+        return Response([MessagesSerializer(m).data for m in self.root['messages'].values()])
+
+class NotificationListCreateView(ZODBView):
+    authentication_classes = [ZODBTokenAuthentication]
+    
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
     
     @with_zodb
     def get(self, request):
         if not self.current_user: return Response([])
-        notifs = [n for n in self.root['notifications'].values() if n.user.id == self.current_user.id]
+        notifs = [n for n in self.root['notifications'].values() 
+                  if n.user.id == self.current_user.id and not n.is_read]
         return Response([NotificationsSerializer(n).data for n in notifs])
+
+    @with_zodb
+    def post(self, request):
+        text = request.data.get('text', '')
+        message_id = request.data.get('message_id')
+        
+        if not text:
+            return Response({"text": "This field is required."}, status=400)
+        if not message_id:
+            return Response({"message_id": "This field is required."}, status=400)
+        
+        msg = self.root['messages'].get(message_id)
+        if not msg:
+            return Response({"message_id": ["Message not found"]}, status=400)
+        
+        with transaction.manager:
+            notif = Notifications(user=msg.user, text=text, message_id=message_id)
+            self.root['notifications'][notif.id] = notif
+        
+        return Response(NotificationsSerializer(notif).data, status=201)
+
+class NotificationDetailView(ZODBView):
+    authentication_classes = [ZODBTokenAuthentication]
+    
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticated()]
+    
+    @with_zodb
+    def get(self, request, pk):
+        notif = self.root['notifications'].get(pk)
+        if not notif: return Response(status=404)
+        if self.current_user and notif.user.id != self.current_user.id:
+            return Response(status=404)
+        return Response(NotificationsSerializer(notif).data)
     
     @with_zodb
     def patch(self, request, pk):
         notif = self.root['notifications'].get(pk)
-        if not notif or notif.user.id != self.current_user.id:
+        if not notif: return Response(status=404)
+        if self.current_user and notif.user.id != self.current_user.id:
             return Response(status=404)
         with transaction.manager:
             notif.is_read = True
-        return Response({"success": True})
+        return Response({"success": True, "message": "Marked as read"})
+

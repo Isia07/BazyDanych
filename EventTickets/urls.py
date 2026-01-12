@@ -20,10 +20,14 @@ from .objective.views import (
     EventListCreateView as ObjEventListCreateView,
     EventDetailView as ObjEventDetailView,
     TicketListCreateView as ObjTicketListCreateView,
-    OrderCreateView as ObjOrderCreateView,
-    UserOrderListView as ObjUserOrderListView,
-    UserNotificationListView as ObjUserNotificationListView,
-    UserMessageListCreateView as ObjUserMessageListCreateView,
+    TicketDetailView as ObjTicketDetailView,
+    OrderListCreateView as ObjOrderListCreateView,
+    OrderDetailView as ObjOrderDetailView,
+    NotificationListCreateView as ObjNotificationListCreateView,
+    NotificationDetailView as ObjNotificationDetailView,
+    MessageListCreateView as ObjMessageListCreateView,
+    MessageDetailView as ObjMessageDetailView,
+    MessageAllListView as ObjMessageAllListView,
     StatusListCreateView as ObjStatusListCreateView,
     StatusDetailView as ObjStatusDetailView,
     EventTypeListCreateView as ObjEventTypeListCreateView,
@@ -171,7 +175,7 @@ urlpatterns = [
     path('api/v1/nosql/tickets/<str:pk>/', NosqlTicketDetailView.as_view(), name='nosql_ticket_detail'),
     path('api/v1/nosql/tickets/', NosqlTicketListCreateView.as_view(), name='nosql_tickets_list'),
 
-    # path('api/v1/rel/tickets/<int:pk>/', RelTicketDetailView.as_view(), name='rel_ticket_detail'), # TODO: adjust to obj
+    path('api/v1/obj/tickets/<str:pk>/', ObjTicketDetailView.as_view(), name='obj_ticket_detail'),
     path('api/v1/obj/tickets/', ObjTicketListCreateView.as_view(), name='obj_tickets_list'),
 
     # ORDERS
@@ -184,9 +188,8 @@ urlpatterns = [
     path('api/v1/nosql/orders/<str:pk>/', NosqlOrderDetailView.as_view(), name='nosql_order_detail'),
     path('api/v1/nosql/orders/', NosqlOrderListCreateView.as_view(), name='nosql_orders_list'),
 
-    path('api/v1/obj/orders/create/', ObjOrderCreateView.as_view(), name='obj_order_create'), # TODO: delete this line
-    # path('api/v1/nosql/orders/<str:pk>/', NosqlOrderDetailView.as_view(), name='nosql_order_detail'), # TODO: adjust to obj
-    path('api/v1/obj/orders/', ObjUserOrderListView.as_view(), name='obj_user_orders_list'),
+    path('api/v1/obj/orders/<str:pk>/', ObjOrderDetailView.as_view(), name='obj_order_detail'),
+    path('api/v1/obj/orders/', ObjOrderListCreateView.as_view(), name='obj_orders_list'),
 
     # NOTIFICATIONS
     path('api/v1/obj-rel/notifications/<int:pk>/', NotificationDetailView.as_view(), name='obj_rel_notification_detail'),
@@ -198,8 +201,8 @@ urlpatterns = [
     path('api/v1/nosql/notifications/<str:pk>/', NosqlNotificationDetailView.as_view(), name='nosql_notification_detail'),
     path('api/v1/nosql/notifications/', NosqlNotificationListCreateView.as_view(), name='nosql_notifications_list'),
 
-    path('api/v1/obj/notifications/<str:pk>/read/', ObjUserNotificationListView.as_view(), name='obj_notification_read'),
-    path('api/v1/obj/notifications/', ObjUserNotificationListView.as_view(), name='obj_notifications_list'),
+    path('api/v1/obj/notifications/<str:pk>/', ObjNotificationDetailView.as_view(), name='obj_notification_detail'),
+    path('api/v1/obj/notifications/', ObjNotificationListCreateView.as_view(), name='obj_notifications_list'),
 
     # MESSAGES
     path('api/v1/obj-rel/messages/all/', MessageAllListView.as_view(), name='obj_rel_messages_all'),
@@ -214,7 +217,7 @@ urlpatterns = [
     path('api/v1/nosql/messages/<str:pk>/', NosqlMessageDetailView.as_view(), name='nosql_message_detail'),
     path('api/v1/nosql/messages/', NosqlMessageListCreateView.as_view(), name='nosql_messages_list'),
 
-    path('api/v1/obj/messages/all/', ObjUserMessageListCreateView.as_view(), name='obj_messages_all'),
-    # path('api/v1/rel/messages/<int:pk>/', RelMessageDetailView.as_view(), name='rel_message_detail'), # TODO: adjust to obj
-    path('api/v1/obj/messages/', ObjUserMessageListCreateView.as_view(), name='obj_messages_list'),
+    path('api/v1/obj/messages/all/', ObjMessageAllListView.as_view(), name='obj_messages_all'),
+    path('api/v1/obj/messages/<str:pk>/', ObjMessageDetailView.as_view(), name='obj_message_detail'),
+    path('api/v1/obj/messages/', ObjMessageListCreateView.as_view(), name='obj_messages_list'),
 ]

@@ -60,14 +60,22 @@ class OrdersSerializer(serializers.Serializer):
     tickets_data = serializers.ListField(
         child=serializers.DictField(), write_only=True, required=False
     )
+    tickets = serializers.ListField(
+        child=serializers.DictField(), write_only=True, required=False
+    )
     discount_id = serializers.CharField(write_only=True, required=False, allow_null=True)
     
-    tickets = serializers.SerializerMethodField()
+    tickets_list = serializers.SerializerMethodField()
     
-    def get_tickets(self, obj):
+    def get_tickets_list(self, obj):
         if hasattr(obj, 'tickets'):
             return [TicketsSerializer(t).data for t in obj.tickets]
         return []
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['tickets'] = ret.pop('tickets_list', [])
+        return ret
 
 class TicketsSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
