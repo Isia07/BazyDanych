@@ -1,164 +1,99 @@
-from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.db import models
+from persistent import Persistent
+import uuid
+import time
+from datetime import datetime
 
+class BasePersistent(Persistent):
+    def __init__(self, **kwargs):
+        self.id = str(uuid.uuid4())
+        self.created_at = datetime.now()
+        self.updated_at = datetime.now()
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
-class Users(AbstractUser):
-    email = models.EmailField(unique=True)
-    name = models.CharField(max_length=150)
-    surname = models.CharField(max_length=150)
-    is_admin = models.BooleanField(default=False)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+class Users(BasePersistent):
+    def __init__(self, email, password_hash, name, surname, **kwargs):
+        super().__init__(**kwargs)
+        self.email = email
+        self.password_hash = password_hash
+        self.name = name
+        self.surname = surname
+        self.is_active = True
+        self.is_admin = False
+        self.groups = []
+        self.user_permissions = []
 
-    groups = models.ManyToManyField(
-        Group,
-        related_name="objective_users_groups",
-        blank=True,
-        help_text="The groups this user belongs to.",
-        verbose_name="groups",
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name="objective_users_permissions",
-        blank=True,
-        help_text="Specific permissions for this user.",
-        verbose_name="user permissions",
-    )
+class Status(BasePersistent):
+    def __init__(self, name, **kwargs):
+        super().__init__(**kwargs)
+        self.name = name
 
-    REQUIRED_FIELDS = ["name", "surname"]
-    USERNAME_FIELD = "email"
+class EventTypes(BasePersistent):
+    def __init__(self, name, **kwargs):
+        super().__init__(**kwargs)
+        self.name = name
 
-    class Meta:
-        db_table = "users_obj_obj"
-        app_label = "objective"
+class Discounts(BasePersistent):
+    def __init__(self, code, discount_percentage, valid_from, valid_to, name="", **kwargs):
+        super().__init__(**kwargs)
+        self.code = code
+        self.discount_percentage = discount_percentage
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+        self.name = name
 
-    def __str__(self):
-        return self.email
+class TicketTypes(BasePersistent):
+    def __init__(self, name, discount=0.0, **kwargs):
+        super().__init__(**kwargs)
+        self.name = name
+        self.discount = discount
 
-    def save(self, *args, **kwargs):
-        self.is_admin = True
-        self.is_staff = True
-        self.is_superuser = True
-        super().save(*args, **kwargs)
+class Events(BasePersistent):
+    def __init__(self, name, description, localization, date_start, date_end, base_price, quantity, event_type, status, **kwargs):
+        super().__init__(**kwargs)
+        self.name = name
+        self.description = description
+        self.localization = localization
+        self.date_start = date_start
+        self.date_end = date_end
+        self.base_price = base_price
+        self.quantity = quantity
+        self.event_type = event_type
+        self.status = status
 
+class Orders(BasePersistent):
+    def __init__(self, user, total_price, discount=None, purchase_date=None, **kwargs):
+        super().__init__(**kwargs)
+        self.user = user
+        self.total_price = total_price
+        self.discount = discount
+        self.purchase_date = purchase_date or datetime.now()
+        self.tickets = []
 
-class Status(models.Model):
-    name = models.CharField(max_length=100)
+class Tickets(BasePersistent):
+    def __init__(self, event, order, ticket_type, quantity, **kwargs):
+        super().__init__(**kwargs)
+        self.event = event
+        self.order = order
+        self.ticket_type = ticket_type
+        self.quantity = quantity
 
-    class Meta:
-        db_table = "status_obj_obj"
-        app_label = "objective"
+class Messages(BasePersistent):
+    def __init__(self, user, text, **kwargs):
+        super().__init__(**kwargs)
+        self.user = user
+        self.text = text
 
-    def __str__(self):
-        return self.name
+class Notifications(BasePersistent):
+    def __init__(self, user, text, message_id=None, is_read=False, **kwargs):
+        super().__init__(**kwargs)
+        self.user = user
+        self.text = text
+        self.message_id = message_id
+        self.is_read = is_read
 
-
-class EventTypes(models.Model):
-    name = models.CharField(max_length=100)
-
-    class Meta:
-        db_table = "event_types_obj_obj"
-        app_label = "objective"
-
-    def __str__(self):
-        return self.name
-
-
-class Discounts(models.Model):
-    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
-    code = models.CharField(max_length=50, unique=True)
-    valid_from = models.DateTimeField()
-    valid_to = models.DateTimeField()
-
-    class Meta:
-        db_table = "discounts_obj_obj"
-        app_label = "objective"
-
-    def __str__(self):
-        return self.code
-
-
-class TicketTypes(models.Model):
-    name = models.CharField(max_length=100)
-    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-
-    class Meta:
-        db_table = "ticket_types_obj_obj"
-        app_label = "objective"
-
-    def __str__(self):
-        return self.name
-
-
-class Events(models.Model):
-    event_type = models.ForeignKey(EventTypes, on_delete=models.PROTECT)
-    status = models.ForeignKey(Status, on_delete=models.PROTECT)
-    localization = models.TextField()
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    date_start = models.DateTimeField()
-    date_end = models.DateTimeField()
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "events_obj_obj"
-        app_label = "objective"
-
-    def __str__(self):
-        return self.name
-
-
-class Orders(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    discount = models.ForeignKey(
-        Discounts, on_delete=models.SET_NULL, null=True, blank=True
-    )
-    purchase_date = models.DateTimeField(auto_now_add=True)
-    total_price = models.DecimalField(max_digits=12, decimal_places=2)
-
-    class Meta:
-        db_table = "orders_obj_obj"
-        app_label = "objective"
-
-    def __str__(self):
-        return str(self.id)
-
-
-class Tickets(models.Model):
-    event = models.ForeignKey(Events, on_delete=models.CASCADE)
-    order = models.ForeignKey(Orders, on_delete=models.CASCADE)
-    ticket_type = models.ForeignKey(TicketTypes, on_delete=models.PROTECT)
-    quantity = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "tickets_obj_obj"
-        app_label = "objective"
-
-    def __str__(self):
-        return str(self.id)
-
-
-class Messages(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "messages_obj_obj"
-        app_label = "objective"
-
-
-class Notifications(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    text = models.TextField()
-    is_read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "notifications_obj_obj"
-        app_label = "objective"
+class Token(BasePersistent):
+    def __init__(self, key, user, **kwargs):
+        super().__init__(**kwargs)
+        self.key = key
+        self.user = user

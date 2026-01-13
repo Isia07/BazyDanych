@@ -114,23 +114,15 @@ relational_database = {
     "PORT": "5432",
 }
 
-
-objective_database = {
-    "ENGINE": "django.db.backends.postgresql",
-    "NAME": "db_object",
-    "USER": "obj_user",
-    "PASSWORD": "obj_haslo",
-    "HOST": "db_object",
-    "PORT": "5432",
-}
-
 DATABASES = {
-    "default": obj_rel_database,  # To create superuser set your database here
+    "default": nosql_database,
     "objective_relational": obj_rel_database,
     "relational": relational_database,
-    "objective": objective_database,
     'nosql': nosql_database,
 }
+
+ZEO_ADDRESS = os.getenv("DB_OBJECT_URL", "zeo://db_object:8090").replace("zeo://", "")
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

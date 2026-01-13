@@ -62,7 +62,6 @@ if __name__ == "__main__":
     print("Waiting for databases...")
     wait_for_db("objective_relational")
     wait_for_db("relational")
-    wait_for_db("objective")
     wait_for_mongo()
 
     print("Running migrations on user...")
@@ -75,13 +74,9 @@ if __name__ == "__main__":
     )
     os.system("python manage.py migrate relational --database=relational")
 
-    os.system("python manage.py makemigrations objective")
-    os.system("python manage.py migrate objective --database=objective")
-
     print("Migrating authtoken tables to all databases...")
     os.system("python manage.py migrate authtoken --database=objective_relational")
     os.system("python manage.py migrate authtoken --database=relational")
-    os.system("python manage.py migrate authtoken --database=objective")
 
     print("All migrations completed! Starting server...")
     os.execvp("python", ["python", "manage.py", "runserver", "0.0.0.0:8000"])
