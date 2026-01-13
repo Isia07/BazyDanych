@@ -221,10 +221,12 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         request = self.context['request']
         user = request.user
 
+        discount_id = discount_obj.pk if discount_obj else None
+
         order = Order.objects.using("relational").create(
             user=user,
             total_price=Decimal('0.00'),
-            discount=discount_obj
+            discount_id=discount_id
         )
 
         total = Decimal('0.00')
